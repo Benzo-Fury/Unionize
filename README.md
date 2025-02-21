@@ -69,7 +69,7 @@ Family trees can be viewed with the `/tree` command. At the point of writing thi
 
 <img src="https://cdn.discordapp.com/attachments/1123486166948270120/1304077701631578133/frame_1.png?ex=67ab5300&is=67aa0180&hm=2999947a912a7e80a2e6eeea3e7f8021049e5260bd17bb5db45455feaa9efcbb&" style="border-radius: 20px; max-width: 50%; height: auto;">
 
-## Versioning <img src="https://raw.githubusercontent.com/Benzo-Fury/Unionize/refs/heads/main/public/images/header%20emojis/versioning.png" style="width: 40px; height: 40px; vertical-align: middle;">
+## Versioning <img src="https://raw.githubusercontent.com/Benzo-Fury/Unionize/refs/heads/main/public/images/header%20emojis/versioning.png" style="width: 24px; height: 24px; vertical-align: middle;">
 
 Unionize uses **semantic versioning** along with **pre release labels**. The format is followed:
 
