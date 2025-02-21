@@ -1,0 +1,240 @@
+{
+  "errors": {
+    "response_not_found": {
+      "type": "text",
+      "content": "Oops! Content missing: `{_key}` {emoji.error}."
+    },
+    "button_wrong_person": {
+      "type": "text",
+      "content": "That button isn't for you {emoji.error}!"
+    }
+  },
+  "commands": {
+    "relation_based": {
+      "success": {
+        "embed": {
+          "type": "embed",
+          "embed": {
+            "title": "New Proposal!!"
+          }
+        },
+        "descs": {
+          "type": "random_text",
+          "content": [
+            "Hey {proposee}, {proposer} wants to {verb} you! What do you think {emoji.wink}?",
+            "Exciting news, {proposee}! {proposer} has proposed to {verb} you. Will you accept {emoji.heart}?",
+            "{proposee}, {proposer} thinks you'd make the perfect addition to their family by {verb}ing you. Are you ready {emoji.party}?",
+            "Wow, {proposee}, {proposer} is asking to {verb} you. Will you go ahead with it {emoji.happy}?",
+            "{proposee}, {proposer} believes it's time to take a big step and {verb} you. What do you say {emoji.smug}?",
+            "Hey {proposee}, {proposer} has a big question for you: Will you let them {verb} you {emoji.info}?",
+            "Guess what, {proposee}? {proposer} wants to {verb} you. Are you on board {emoji.starStruck}?",
+            "{proposee}, {proposer} has taken the first step to {verb} you. What will your answer be {emoji.thinking}?",
+            "Big moment, {proposee}! {proposer} is proposing to {verb} you. Will you accept {emoji.uwu}?",
+            "This is your moment, {proposee}. {proposer} wants to {verb} you and make it official. Do you agree {emoji.success}?",
+            "{proposee}, {proposer} believes you'd be a perfect match to {verb}. Are you in {emoji.party}?",
+            "Hey {proposee}, {proposer} thinks you're amazing enough to {verb} you. What do you think {emoji.happy}?",
+            "Excuse me, {proposee}, but {proposer} has decided to {verb} you. Do you accept their proposal {emoji.info}?",
+            "Wow, {proposee}, {proposer} has chosen to {verb} you. What's your decision {emoji.smug}?",
+            "Attention, {proposee}: {proposer} wants to {verb} you. Are you ready for this {emoji.success}?",
+            "Big decision, {proposee}. {proposer} wants to {verb} you. What’s your call {emoji.starStruck}?",
+            "{proposee}, {proposer} is making the bold move to {verb} you. Are you in {emoji.thinking}?",
+            "{proposee}, {proposer} says they can’t imagine this without {verb}ing you. Will you make it happen {emoji.wink}?",
+            "{proposee}, {proposer} has proposed to {verb} you. Your response could change everything {emoji.happy}!",
+            "{proposee}, {proposer} has made a big decision to {verb} you. What’s your reply {emoji.uwu}?"
+          ]
+        }
+      },
+      "dm": {
+        "type": "text",
+        "content": "{proposer} just sent you a Proposal. Go check it with {command.proposals}."
+      },
+      "errors": {
+        "proposal_already_exists": {
+          "type": "text",
+          "content": "You already have a pending proposal with {proposee} {emoji.error}."
+        },
+        "proposal_self": {
+          "type": "text",
+          "content": "You cannot send a proposal to yourself {emoji.laugh}."
+        },
+        "proposal_bot": {
+          "type": "text",
+          "content": "You can't send a proposal to a bot {emoji.laugh}."
+        },
+        "relation_already_exists": {
+          "type": "text",
+          "content": "That relationship already exists {emoji.thinking}."
+        },
+        "relation_not_allowed": {
+          "type": "text",
+          "content": "{proposee} is already your {relation} {emoji.fear_shock}."
+        }
+      }
+    },
+    "proposals": {
+      "errors": {
+        "none_found": {
+          "type": "text",
+          "content": "It doesn't look like there are any proposals with you involved {emoji.sad}."
+        }
+      },
+      "manager": {
+        "dash": {
+          "type": "embed",
+          "embed": {
+            "description": "## {emoji.heart} Proposal Manager {emoji.heart}\nWelcome to the **Proposal Manager** :wave:!\nThe Proposal Manager is where you can come to see all your Proposals, and not just marriage proposals.\n## Proposal Status' :bar_chart:\nThese are the different status' that a Proposal can be.\n- **Pending :yellow_circle:** - The Proposal is still pending a response.\n- **Approved :green_circle:** - The Proposal has been approved by the proposee.\n- **Denied :red_circle:** - The Proposal was denied by the proposee.\n## Proposal Types :ring: \nNot all proposals are for marriage in the Unionize bot. Proposals can be for:\n- `Adoption`\n- `Parenting`\n- `Marriage`"
+          }
+        },
+        "generic": {
+          "type": "embed",
+          "embed": {
+            "description": "### Proposal {proposal_index}",
+            "fields": [
+              {
+                "name": "Relation Type {emoji.ring}",
+                "value": "`{relation_type}`",
+                "inline": true
+              },
+              {
+                "name": "Status 📊",
+                "value": "{status_emoji} **{status}**",
+                "inline": true
+              },
+              {
+                "name": "Proposer",
+                "value": "{proposer}"
+              },
+              {
+                "name": "Proposee",
+                "value": "{proposee}"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "insight": {
+      "add": {
+        "success": {
+          "type": "text",
+          "content": "Created `{type}` insight: `{content}` {emoji.success}."
+        }
+      },
+      "show": {
+        "errors": {
+          "insight_nonexistent": {
+            "type": "text",
+            "content": "That insight doesn't seem to exist anymore {emoji.sad}."
+          }
+        },
+        "success": {
+          "type": "embed",
+          "embed": {
+            "title": "Insight 💡",
+            "fields": [
+              {
+                "name": "Type 🏷️",
+                "value": "`{type}`",
+                "inline": true
+              },
+              {
+                "name": "Priority 📊",
+                "value": "`{priority}`",
+                "inline": true
+              },
+              {
+                "name": "Content 📝",
+                "value": "```{content}```"
+              },
+              {
+                "name": "IconUrl 🔗",
+                "value": "[`Click Here 🔗`]({iconUrl})",
+                "inline": true
+              },
+              {
+                "name": "Added By 🖋️",
+                "value": "{addedBy}",
+                "inline": true
+              }
+            ]
+          }
+        }
+      },
+      "delete": {
+        "success": {
+          "type": "text",
+          "content": "Successfully deleted that insight {emoji.success}."
+        }
+      }
+    },
+    "tree": {
+      "errors": {
+        "no_tree": {
+          "type": "text",
+          "content": "You currently don't have a family tree {emoji.sad}. Maybe marry someone with {command.marry}."
+        }
+      }
+    }
+  },
+  "components": {
+    "proposal_manage": {
+      "no_proposal": {
+        "type": "text",
+        "content": "Hmmm... that proposal doesn't exits anymore {emoji.error}."
+      },
+      "proposee_only": {
+        "type": "text",
+        "content": "You can't use that button {emoji.error}."
+      },
+      "already_denied": {
+        "type": "text",
+        "content": "That proposal has already been denied {emoji.error}."
+      },
+      "already_accepted": {
+        "type": "text",
+        "content": "That proposal has already been accepted {emoji.success}."
+      }
+    }
+  },
+  "plugins": {
+    "guild_only": {
+      "fail": {
+        "type": "text",
+        "content": "This command only works in a server {emoji.error}."
+      }
+    },
+    "owner_only": {
+      "fail": {
+        "type": "text",
+        "content": "You cannot use that command {emoji.error}."
+      }
+    },
+    "dispose": {
+      "fail": {
+        "type": "text",
+        "content": "Hey, I just restart and am not ready to be used yet {emoji.sad}. Please retry this command in a sec {emoji.happy}."
+      }
+    }
+  },
+  "auto_complete": {
+    "owner_only": {
+      "fail": {
+        "type": "text",
+        "content": "You cannot use that command."
+      }
+    }
+  },
+  "events": {
+    "error": {
+      "type": "embed",
+      "embed": {
+        "fields": [
+          {
+            "name": "Module",
+            "value": "`{module}`"
+          }
+        ]
+      }
+    }
+  }
+}

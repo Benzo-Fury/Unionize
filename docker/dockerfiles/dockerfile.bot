@@ -1,0 +1,17 @@
+# Use a base image with Node.js
+FROM oven/bun:latest
+
+# Set the working directory
+WORKDIR /app
+
+# Copy dependency files
+COPY package.json bun.lockb ./
+
+# Install dependencies with Bun
+RUN bun install
+
+# Copy the rest of the app
+COPY . .
+
+# Run the app with Bun
+CMD ["bun", "start"]

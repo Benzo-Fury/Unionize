@@ -1,0 +1,55 @@
+{
+  "name": "unionize",
+  "module": "src/index.ts",
+  "type": "module",
+  "version": "a.1.0.0",
+  "description": "",
+  "scripts": {
+    "start": "bun ./src/index.ts",
+    "start:dev": "bun --watch ./src/index.ts",
+    "publish": "bun ./scripts/ts/publish.ts",
+    "build": "echo todo",
+    "docker:n4j:flush": "docker volume rm unionize_neo4j-data",
+    "docker:mdb:flush": "docker volume rm unionize_mongodb-data",
+    "docker:mdb:start": "docker compose -f ./docker/composers/docker-compose.yaml -f ./docker/composers/docker-compose.dev.yaml up -d mongo",
+    "docker:bot:redo": "docker compose -f ./docker/composers/docker-compose.yaml -f ./docker/composers/docker-compose.dev.yaml up --build -d bot && bun docker:bot:logs",
+    "docker:bot:logs": "docker compose -f ./docker/composers/docker-compose.yaml logs bot -f",
+    "docker:down": "docker compose -f ./docker/composers/docker-compose.yaml down",
+    "docker:start": "docker compose -f ./docker/composers/docker-compose.yaml -f ./docker/composers/docker-compose.dev.yaml up --build -d && bun docker:bot:logs"
+  },
+  "devDependencies": {
+    "@trivago/prettier-plugin-sort-imports": "^4.3.0",
+    "@types/bun": "latest",
+    "@types/d3": "^7.4.3",
+    "@types/graphviz": "^0.0.39",
+    "prettier": "^3.3.3"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@napi-rs/canvas": "^0.1.60",
+    "@sern/handler": "^4.2.0",
+    "@sern/publisher": "^1.1.2",
+    "d3": "^7.9.0",
+    "discord.js": "^14.16.3",
+    "graphviz": "^0.0.9",
+    "install": "^0.13.0",
+    "mongoose": "^8.7.3",
+    "neo4j-driver": "^5.26.0"
+  },
+  "paths": {
+    "#config": [
+      "./src/config.ts"
+    ],
+    "#lang": [
+      "./src/lang.json"
+    ],
+    "#embed": [
+      "./src/util/templates/embeds/Embed.ts"
+    ],
+    "#cmdModule": [
+      "./src/util/wrappers/commandModule.ts"
+    ]
+  }
+}

@@ -1,0 +1,25 @@
+services:
+  bot:
+    build:
+      context: ../../
+      dockerfile: ./docker/dockerfiles/dockerfile.bot
+    volumes:
+      - "../../src:/app/src"
+    depends_on:
+      - neo4j
+      - mongo
+    command: "bun start:dev"
+
+secrets:
+  bot-token:
+    file: ../../secrets/bot/token.key
+    external: false
+  n4j-auth:
+    file: ../../secrets/db/n4j/auth.key
+    external: false
+  mongo-username: 
+    file: ../../secrets/db/mongo/username.key
+    external: false
+  mongo-password:
+    file: ../../secrets/db/mongo/password.key
+    external: false

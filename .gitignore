@@ -1,0 +1,6 @@
+/node_modules
+/dist
+/secrets
+/.sern
+/.vscode
+.env

@@ -1,0 +1,63 @@
+services:
+  bot:
+    image: unionize-bot:latest
+    container_name: bot
+    secrets:
+      - bot-token
+      - n4j-auth
+      - mongo-username
+      - mongo-password
+    environment:
+      BOT_TOKEN_FILE: /run/secrets/bot-token
+      N4J_AUTH_FILE: /run/secrets/n4j-auth
+      MONGO_USERNAME_FILE: /run/secrets/mongo-username
+      MONGO_PASSWORD_FILE: /run/secrets/mongo-password
+    depends_on:
+      - neo4j
+      - mongo
+
+  neo4j:
+    image: neo4j:latest
+    container_name: neo4j
+    ports:
+      - "7687:7687"
+      - "7474:7474"
+    secrets:
+      - n4j-auth
+    environment:
+      NEO4J_AUTH_FILE: /run/secrets/n4j-auth
+      NEO4J_PLUGINS: '["apoc"]'  # Install APOC
+      NEO4J_dbms_security_procedures_unrestricted: apoc.*  # Allow APOC procedures
+      NEO4J_dbms_security_procedures_whitelist: apoc.*  # Whitelist APOC
+    volumes:
+      - neo4j-data:/data
+  
+  mongo:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - 27017:27017
+    secrets:
+      - mongo-username
+      - mongo-password
+    environment:
+      MONGO_INITDB_ROOT_PASSWORD_FILE: /run/secrets/mongo-password
+      MONGO_INITDB_ROOT_USERNAME_FILE: /run/secrets/mongo-username
+      MONGO_INITDB_DATABASE: unionize
+    volumes:
+      - mongodb-data:/data/db
+
+volumes:
+  neo4j-data:
+  neo4j-logs:
+  mongodb-data:
+
+secrets:
+  bot-token:
+    external: true
+  n4j-auth:
+    external: true
+  mongo-username:
+    external: true
+  mongo-password:
+    external: true

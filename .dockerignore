@@ -1,0 +1,11 @@
+.vscode
+.dockerignore
+.gitignore
+.prettierrc
+public
+secrets
+node_modules
+docker-compose.yml
+docker-compose.dev.yml
+Dockerfile
+README.md
