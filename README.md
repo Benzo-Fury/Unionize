@@ -1,15 +1,6 @@
-<style>
-  .emoji{
-    width: 24px; 
-    height: 24px; 
-    vertical-align: middle; 
-    margin-left: 2px;
-  }
-</style>
-
 <div align="center">
   <img src="
-  https://raw.githubusercontent.com/Benzo-Fury/Unionize/main/public/images/banner.png
+  https://raw.githubusercontent.com/Benzo-Fury/Unionize/refs/heads/main/public/images/banner.png
   " width="900px" style="border-radius: 20px;">
   <h1>A Better Marriage Bot</h1>
   <h4>A free to use, modern Discord bot for creating family's within Discord</h4>
@@ -42,11 +33,10 @@
   - [Command \& System Enhancements](#️-command--system-enhancements)
   - [Premium Features](#-premium-features)
 
-
 ## Why?
 
 - Supports poly relationships.
-- Modern & Minimalistic 
+- Modern & Minimalistic
 - Made for speed
 
 <!--
@@ -57,19 +47,19 @@ Have a table here with each major competitor and what their capable of and what 
 
 # Technical 🛠️
 
-## sern Handler <img src="https://raw.githubusercontent.com/Benzo-Fury/Unionize/main/public/images/sern.png" class="emoji">
+## sern Handler <img src="https://raw.githubusercontent.com/Benzo-Fury/Unionize/refs/heads/main/public/images/header%20emojis/sern.png" style="width: 24px; height: 24px; vertical-align: middle;  margin-left: 2px;">
 
 Unionize has been written using the latest version of the [sern](https://sern.dev) bot framework. I've been a supporter of this framework for years and I highly recommend them for your next bot.
 
-## Databases <img src="https://raw.githubusercontent.com/Benzo-Fury/Unionize/main/public/images/database.png" class="emoji">
+## Databases <img src="https://raw.githubusercontent.com/Benzo-Fury/Unionize/refs/heads/main/public/images/header%20emojis/database.png" style="width: 24px; height: 24px; vertical-align: middle;  margin-left: 2px; margin-bottom: 2px;">
 
 Unionize runs 2 databases consecutively for different purposes. Neo4j is used to store relationships between users and MongoDB is used for everything else.
 
-### Neo4j <img src="https://raw.githubusercontent.com/Benzo-Fury/Unionize/main/public/images/Neo4j.png" class="emoji">
+### Neo4j <img src="https://raw.githubusercontent.com/Benzo-Fury/Unionize/refs/heads/main/public/images/header%20emojis/Neo4j.png" style="width: 24px; height: 24px; vertical-align: middle;  margin-left: 2px;">
 
 **Modules will never access the N4j client directly** and therefor never handle or use cypher. All commands use the models created for them (N4jUser, N4jGuild, etc) or interact with the data interpreter.
 
-### Mongodb <img src="https://raw.githubusercontent.com/Benzo-Fury/Unionize/main/public/images/Mongodb.png" class="emoji" style="margin-bottom:3px">
+### Mongodb <img src="https://raw.githubusercontent.com/Benzo-Fury/Unionize/refs/heads/main/public/images/header%20emojis/Mongodb.png" style="width: 24px; height: 24px; vertical-align: middle;  margin-left: 2px; margin-bottom: 3px;">
 
 Our use of MongoDB is less strict due to its already strong model like ecosystem. This allows commands to interact with the DB via these models.
 
@@ -79,7 +69,7 @@ Family trees can be viewed with the `/tree` command. At the point of writing thi
 
 <img src="https://cdn.discordapp.com/attachments/1123486166948270120/1304077701631578133/frame_1.png?ex=67ab5300&is=67aa0180&hm=2999947a912a7e80a2e6eeea3e7f8021049e5260bd17bb5db45455feaa9efcbb&" style="border-radius: 20px; max-width: 50%; height: auto;">
 
-## Versioning
+## Versioning <img src="https://raw.githubusercontent.com/Benzo-Fury/Unionize/refs/heads/main/public/images/header%20emojis/versioning.png">
 
 Unionize uses **semantic versioning** along with **pre release labels**. The format is followed:
 
@@ -98,7 +88,7 @@ Unionize uses **semantic versioning** along with **pre release labels**. The for
 
 # Usage Docs
 
-## Proposals <img src="https://raw.githubusercontent.com/Benzo-Fury/Unionize/main/public/images/heart.png" class="emoji">
+## Proposals <img src="https://raw.githubusercontent.com/Benzo-Fury/Unionize/refs/heads/main/public/images/header%20emojis/heart.png" style="width: 24px; height: 24px; vertical-align: middle; margin-left: 2px; margin-bottom: 6px;">
 
 ### Lifetime
 
@@ -205,4 +195,5 @@ Use this table to understand what IL correlates to what relationships. Keep in m
 - **Exclusive seasonal events and memories.**
 
 ## Other
-- Remove the language manager from global namespace. 
+
+- Remove the language manager from global namespace.
