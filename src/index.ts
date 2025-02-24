@@ -59,9 +59,6 @@ await makeDependencies(({ add, swap }) => {
 // Initializing sern with pre defined configuration
 Sern.init(config.sern);
 
-// todo:
-// Check topgg marriage bot and see what negative things people are saying.
-// We can use this to improve our bot
 
 // Would be call if we have our own commandModule wrapper that exports a debug function.
 // We then call this debug function all around commands and when a error occurs it uses the logs to help debug.
