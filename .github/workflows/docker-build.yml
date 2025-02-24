@@ -29,4 +29,4 @@ jobs:
           context: .
           file: ./docker/dockerfiles/dockerfile.bot
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/unionize:latest
+          tags: ghcr.io/benzo-fury/unionize:latest
