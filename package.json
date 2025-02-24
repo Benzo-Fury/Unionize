@@ -15,7 +15,11 @@
     "docker:bot:redo": "docker compose -f ./docker/composers/docker-compose.yaml -f ./docker/composers/docker-compose.dev.yaml up --build -d bot && bun docker:bot:logs",
     "docker:bot:logs": "docker compose -f ./docker/composers/docker-compose.yaml logs bot -f",
     "docker:down": "docker compose -f ./docker/composers/docker-compose.yaml down",
-    "docker:start": "docker compose -f ./docker/composers/docker-compose.yaml -f ./docker/composers/docker-compose.dev.yaml up --build -d && bun docker:bot:logs"
+    "docker:start": "docker compose -f ./docker/composers/docker-compose.yaml -f ./docker/composers/docker-compose.dev.yaml up --build -d && bun docker:bot:logs",
+    "docker:deploy": "docker stack deploy -c ./docker/composers/docker-compose.yaml unionize",
+    "docker:build": "docker build -f ./docker/dockerfiles/dockerfile.bot -t unionize:latest .",
+    "docker:build:push": "docker tag unionize:latest neo/unionize:latest && docker push neo/unionize:latest",
+    "docker:secrets:load": "docker secret create bot-token ./secrets/bot/token.key && docker secret create n4j-auth ./secrets/db/n4j/auth.key && docker secret create mongo-username ./secrets/db/mongo/username.key && docker secret create mongo-password ./secrets/db/mongo/password.key"
   },
   "devDependencies": {
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",
