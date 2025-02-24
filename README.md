@@ -1,7 +1,5 @@
 <div align="center">
-  <img src="
-  https://raw.githubusercontent.com/Benzo-Fury/Unionize/refs/heads/main/public/images/banner.png
-  " width="900px" style="border-radius: 20px;">
+  <img src="https://raw.githubusercontent.com/Benzo-Fury/Unionize/refs/heads/main/public/images/banner-rounded.png" width="900px"">
   <h1>A Better Marriage Bot</h1>
   <h4>A free to use, modern Discord bot for creating family's within Discord</h4>
 </div>
