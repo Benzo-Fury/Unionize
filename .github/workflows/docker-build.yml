@@ -26,6 +26,7 @@ jobs:
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v4
         with:
-          context: ./docker/dockerfiles/dockerfile.bot
+          context: .
+          file: ./docker/dockerfiles/dockerfile.bot
           push: true
           tags: ghcr.io/neo/unionize:latest
