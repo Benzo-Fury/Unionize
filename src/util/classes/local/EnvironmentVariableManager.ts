@@ -37,7 +37,7 @@ export class EVM {
         value = await evm.resolveSecret(value);
       }
 
-      evm.vars.set(key as EnvironmentVariable, value);
+      evm.vars.set(key as EnvironmentVariable, value.trim()); // Trimming to remove trailing spaces
     }
 
     return evm;
