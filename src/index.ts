@@ -1,6 +1,5 @@
 import lang from "#lang";
 import { makeDependencies, Sern } from "@sern/handler";
-import { Publisher } from "@sern/publisher";
 import { Logger } from "util/classes/local/Logger.ts";
 import config from "./config.ts";
 import { MDBClient } from "./util/classes/db/mongodb/MDBClient.ts";
@@ -45,15 +44,6 @@ await makeDependencies(({ add, swap }) => {
   );
   add("langManager", (deps) => new LangManager(lang, deps["@sern/client"]));
   add("insightCache", new InsightCache());
-  add(
-    "publisher",
-    (deps) =>
-      new Publisher(
-        deps["@sern/modules"],
-        deps["@sern/emitter"],
-        deps["@sern/logger"],
-      ),
-  );
 });
 
 // Initializing sern with pre defined configuration
