@@ -1,6 +1,6 @@
 services:
   bot:
-    image: unionize-bot:latest
+    image: ghcr.io/benzo-fury/unionize:latest
     container_name: bot
     secrets:
       - bot-token
