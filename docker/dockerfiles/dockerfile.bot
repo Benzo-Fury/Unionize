@@ -4,6 +4,9 @@ FROM oven/bun:latest
 # Set the working directory
 WORKDIR /app
 
+# Update package list and install Graphviz
+RUN apt-get update && apt-get install -y graphviz && rm -rf /var/lib/apt/lists/*
+
 # Copy dependency files
 COPY package.json bun.lockb ./
 
