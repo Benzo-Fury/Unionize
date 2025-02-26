@@ -17,7 +17,7 @@ import {
   InsightModel,
   type InsightType,
 } from "../../../util/schemas/insight.schema";
-
+import Lang from '../../../util/namespaces/Lang'
 export default commandModule({
   type: CommandType.Slash,
   plugins: [

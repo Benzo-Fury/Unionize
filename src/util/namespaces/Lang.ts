@@ -5,8 +5,8 @@ import type {
   ResponseKey,
 } from "../classes/local/LangManager";
 
-export namespace Lang {
-  export function getRes<T extends "text" | "embed">(
+export default {
+  getRes<T extends "text" | "embed">(
     key: ResponseKey,
     params?: Parameters,
   ): T extends "embed" ? EmbedResponseObj : string {

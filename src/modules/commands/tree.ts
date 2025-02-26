@@ -3,7 +3,7 @@ import { CommandType } from "@sern/handler";
 import graphviz from "graphviz";
 import { N4jUser } from "../../util/classes/db/neo4j/models/N4jUser";
 import { guildOnly } from "../../util/plugins/guildOnly";
-
+import Lang from '../../util/namespaces/Lang';
 /**
  * This command is very temporary...
  * at the moment it just uses graphviz to render a low quality and ugly graph to represent family relations.
