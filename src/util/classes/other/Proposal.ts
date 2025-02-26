@@ -11,7 +11,7 @@ import { Embed } from "../../templates/embeds/Embed";
 import { RelationValidator } from "../db/neo4j/helpers/RelationValidator";
 import { DirectRelation } from "../db/neo4j/models/N4jRelation";
 import { N4jUser } from "../db/neo4j/models/N4jUser";
-
+import Lang from "util/namespaces/Lang";
 // See if we can add an allowed mentions to mention the user (might work without actually mentioning)
 // todo: This could probably just be moved to a function or rethink how it works.
 // Proposal events for servers?

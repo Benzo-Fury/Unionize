@@ -1,5 +1,6 @@
 import { commandModule, CommandType } from "@sern/handler";
 import { ProposalModel } from "../../../util/schemas/proposal.schema";
+import Lang from '../../../util/namespaces/Lang'
 
 export default commandModule({
   name: "decline-proposal",

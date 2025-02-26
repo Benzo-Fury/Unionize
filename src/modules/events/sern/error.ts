@@ -3,7 +3,7 @@ import { eventModule, EventType, Service } from "@sern/handler";
 import { AttachmentBuilder, type EmbedData } from "discord.js";
 import { hexToNum } from "../../../util/functions/formatting/hexToNum";
 import { Embed } from "../../../util/templates/embeds/Embed";
-
+import Lang from '../../../util/namespaces/Lang'
 export class ErrorEmbed extends Embed {
   constructor(data?: EmbedData) {
     super(

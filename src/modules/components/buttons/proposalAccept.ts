@@ -13,6 +13,7 @@ import {
 export interface CState extends Record<string, unknown> {
   proposal: IProposal;
 }
+import Lang from '../../../util/namespaces/Lang'
 
 export default commandModule({
   name: "accept-proposal",
