@@ -28,7 +28,7 @@ services:
       NEO4J_AUTH_FILE: /run/secrets/n4j-auth
       NEO4J_PLUGINS: '["apoc"]'  # Install APOC
       NEO4J_dbms_security_procedures_unrestricted: apoc.*  # Allow APOC procedures
-      NEO4J_dbms_security_procedures_whitelist: apoc.*  # Whitelist APOC
+      NEO4J_dbms_security_procedures_allowlist: apoc.*  # Whitelist APOC
     volumes:
       - neo4j-data:/data
   
