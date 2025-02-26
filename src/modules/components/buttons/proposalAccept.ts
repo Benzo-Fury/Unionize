@@ -1,15 +1,17 @@
 import { commandModule, CommandType } from "@sern/handler";
+import { RelationValidator } from "util/classes/db/neo4j/helpers/RelationValidator";
+import { Guild } from "util/schemas/guild.schema";
 import {
   DirectRelation,
   type N4jSnowflakeRelation,
 } from "../../../util/classes/db/neo4j/models/N4jRelation";
 import {
-  type Proposal,
+  type IProposal,
   ProposalModel,
 } from "../../../util/schemas/proposal.schema";
 
 export interface CState extends Record<string, unknown> {
-  proposal: Proposal;
+  proposal: IProposal;
 }
 
 export default commandModule({
@@ -46,9 +48,56 @@ export default commandModule({
       });
     }
 
-    // todo: we need to do some calculations here to make sure this relation can be created.
-    // Unsure how we want to handle this weather the guild should have a incest level or something.
-    // This calculation also needs to be completed when the proposal is sent and recalculated upon being accepted.
+    // Generating their relation path
+    const rPath = await n4j.generateRelationPath(
+      proposal.proposerId,
+      proposal.proposeeId,
+      proposal.guildId,
+    );
+
+    // Only checking path if the users are related somehow
+    if (rPath) {
+      const guildDoc = await Guild.getById(proposal.guildId);
+
+      const relValidator = new RelationValidator(guildDoc, rPath);
+      const sP = relValidator.simplifiedPath.join(" ");
+
+      // Checking if the relation already exists
+      if (
+        (sP === "partner" && proposal.relation === "partner") ||
+        (sP === "child" && proposal.relation === "child") ||
+        (sP === "parent" && proposal.relation === "parent")
+      ) {
+        return i.reply({
+          content: Lang.getRes<"text">(
+            "commands.relation_based.errors.relation_already_exists",
+            {
+              proposee: `<@${proposal.proposeeId}>`,
+            },
+          ),
+          ephemeral: true,
+        });
+      }
+
+      /**
+       * Can the relation be created.
+       * Takes into account guild settings.
+       */
+      const canRelation = relValidator.check();
+
+      if (!canRelation) {
+        return i.reply({
+          content: Lang.getRes<"text">(
+            "commands.relation_based.errors.relation_not_allowed",
+            {
+              proposee: `<@${proposal.proposeeId}>`,
+              relation: sP,
+            },
+          ),
+          ephemeral: true,
+        });
+      }
+    }
 
     // Mark the proposal as accepted
     await proposal.updateOne({ status: "accepted" });
@@ -70,7 +119,7 @@ export default commandModule({
 /**
  * Helper function to take a Proposal and turn it into a relation
  */
-function proposalToRelation(prop: Proposal): N4jSnowflakeRelation {
+function proposalToRelation(prop: IProposal): N4jSnowflakeRelation {
   const data: N4jSnowflakeRelation = {
     relation:
       prop.relation === "partner"
