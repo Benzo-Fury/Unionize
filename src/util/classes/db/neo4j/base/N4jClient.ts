@@ -153,6 +153,6 @@ export class N4jClient implements Disposable {
    * Creates a new n4j url.
    */
   private createUrl(ip: string, port: number) {
-    return `neo4j://${ip}:${port}`;
+    return `bolt://${ip}:${port}`;
   }
 }
