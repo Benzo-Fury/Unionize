@@ -182,7 +182,7 @@ export class N4jDataInterpreter {
       uid2: user2Id,
       gid: guildId,
       r: relation,
-      p: data.properties,
+      p: data.properties || {}, // Cannot be null, will throw errors
     }))!;
 
     // Extracting result

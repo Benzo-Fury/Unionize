@@ -14,7 +14,7 @@ MERGE (u2:User { id: $uid2 })-[:MEMBER_OF]->(g)
 ON CREATE SET
   u2.createdOn = timestamp()
 
-WITH u1, u2, $r, coalesce($p, {}) AS p
-CALL apoc.merge.relationship(u1, r, {}, p, u2) YIELD r
+WITH u1, u2, $r AS r, coalesce($p, {}) AS p
+CALL apoc.merge.relationship(u1, r, {}, p, u2) YIELD rel
 
-RETURN r
+RETURN rel AS r
