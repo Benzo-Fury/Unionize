@@ -1,5 +1,6 @@
 import type { Context, SDT } from "@sern/handler";
 import { ActionRowBuilder, ButtonBuilder } from "discord.js";
+import Lang from "util/namespaces/Lang";
 import { Guild } from "util/schemas/guild.schema";
 import { directRelToDbRel } from "../../functions/other/directRelToDbRel";
 import {
@@ -11,7 +12,7 @@ import { Embed } from "../../templates/embeds/Embed";
 import { RelationValidator } from "../db/neo4j/helpers/RelationValidator";
 import { DirectRelation } from "../db/neo4j/models/N4jRelation";
 import { N4jUser } from "../db/neo4j/models/N4jUser";
-import Lang from "util/namespaces/Lang";
+
 // See if we can add an allowed mentions to mention the user (might work without actually mentioning)
 // todo: This could probably just be moved to a function or rethink how it works.
 // Proposal events for servers?
@@ -82,6 +83,8 @@ export class Proposal {
       });
     }
 
+    await ctx.interaction.deferReply();
+
     // ------ Validating relation creation ------ //
 
     // Generating their relation path
@@ -104,14 +107,13 @@ export class Proposal {
         (sP === "child" && relation === DirectRelation.Child) ||
         (sP === "parent" && relation === DirectRelation.Parent)
       ) {
-        return ctx.reply({
+        return ctx.interaction.editReply({
           content: Lang.getRes<"text">(
             "commands.relation_based.errors.relation_already_exists",
             {
               proposee: proposee.toString(),
             },
           ),
-          ephemeral: true,
         });
       }
 
@@ -122,7 +124,7 @@ export class Proposal {
       const canRelation = relValidator.check();
 
       if (!canRelation) {
-        return ctx.reply({
+        return ctx.interaction.editReply({
           content: Lang.getRes<"text">(
             "commands.relation_based.errors.relation_not_allowed",
             {
@@ -130,7 +132,6 @@ export class Proposal {
               relation: sP,
             },
           ),
-          ephemeral: true,
         });
       }
     }
@@ -147,12 +148,11 @@ export class Proposal {
     } catch (e: any) {
       if (e.code === 11000) {
         // Duplicate key error
-        return ctx.reply({
+        return ctx.interaction.editReply({
           content: Lang.getRes<"text">(
             "commands.relation_based.errors.proposal_already_exists",
             { proposee: proposee.toString() },
           ),
-          ephemeral: true,
         });
       } else {
         // Rethrow error if not regarding duplicate key
@@ -170,7 +170,7 @@ export class Proposal {
           }),
         )
         .catch(() => null),
-      ctx.reply({
+      ctx.interaction.editReply({
         content: proposee.toString(),
         embeds: [
           new Embed(
