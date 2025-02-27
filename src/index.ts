@@ -48,9 +48,3 @@ await makeDependencies(({ add, swap }) => {
 
 // Initializing sern with pre defined configuration
 Sern.init(config.sern);
-
-
-// Would be call if we have our own commandModule wrapper that exports a debug function.
-// We then call this debug function all around commands and when a error occurs it uses the logs to help debug.
-
-// Using lang globally might be causing issues with it not being found or whatever.

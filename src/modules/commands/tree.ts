@@ -49,7 +49,7 @@ export default commandModule({
     tree.nodes.forEach((node) => {
       graph.addNode(node.elementId!, {
         label: members.get(node.id)?.user.username || "Left Server",
-      }); // todo: Modify data interpreter so element id is always defined for this method
+      });
     });
     tree.relations.forEach((r) => {
       let pu = r.primaryNode;

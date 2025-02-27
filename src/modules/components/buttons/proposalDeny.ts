@@ -47,9 +47,5 @@ export default commandModule({
     // Defer any update now that all database updates are done
     // We update database first to avoid the user spamming accept buttons
     await i.deferUpdate();
-
-    // todo: Check if the button is on the proposal manager or a proposal itself
-    // then update the message accordingly. See if we can use templates and whatnot so we are not defining or changing any of the embed fields directly.
-    // If the button is on the proposal manager we need to update the page cache somehow.
   },
 });

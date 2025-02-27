@@ -22,7 +22,6 @@ export class N4jUser {
   public readonly guild: N4jGuild | null;
 
   constructor(
-    // todo: change to use a object
     public readonly id: string,
     guild: N4jGuild | string | null,
     private dataInterpreter: N4jDataInterpreter,

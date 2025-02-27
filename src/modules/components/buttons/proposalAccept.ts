@@ -110,10 +110,6 @@ export default commandModule({
     // Finally add the relationship to neo4j
     const data = proposalToRelation(proposal);
     await n4j.createRelation(data, proposal.guildId);
-
-    // todo: Check if the button is on the proposal manager or a proposal itself
-    // then update the message accordingly. See if we can use templates and whatnot so we are not defining or changing any of the embed fields directly.
-    // If the button is on the proposal manager we need to update the page cache somehow.
   },
 });
 

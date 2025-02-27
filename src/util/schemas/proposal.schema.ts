@@ -71,7 +71,6 @@ export const proposalSchema = new Schema<IProposal>({
       const expirationTime = new Date(this.expiration).getTime();
       const durationInMillis = expirationTime - now.getTime();
 
-      // todo: move the "convert to days" into a function
       const days = Math.ceil(durationInMillis / (24 * 60 * 60 * 1000)); // Convert to days
       return Math.floor(days / 2); // Half of the total days
     },
