@@ -32,8 +32,6 @@ export type Query =
 
 export type QueryParameters = Record<string, any>;
 
-// todo: Validate that the data interpreter ONLY EVER returns models from methods. It should also NEVER pass models onto the client.
-// todo: Rename class perhaps and methods? Please put effort into it.
 /**
  * N4jDataInterpreter
  *
@@ -88,7 +86,7 @@ export class N4jDataInterpreter {
       // Checking if error is generic
       const mappedError = this.mapNeo4jError(e);
       if (mappedError) {
-        throw new N4jError(mappedError); // todo: throwing n4j errors should be handled by the client
+        throw new N4jError(mappedError); 
       } else {
         throw new Error("Undeclared Cypher Error: " + e);
       }
@@ -343,7 +341,6 @@ export class N4jDataInterpreter {
   }
 
   // -------- Transition Methods -------- //
-  // todo: Should transition methods be cleaned up?
 
   /**
    * Helper method to create a new N4jUser instance.

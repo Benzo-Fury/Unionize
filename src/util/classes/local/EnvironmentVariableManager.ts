@@ -1,9 +1,5 @@
 import type { EnvironmentVariables } from "ts/interfaces/EnvironmentVariables";
 
-// todo: make it so the enviroment variables the code uses dont have "_FILE" and it has a map to resolve what vars are from a file.
-// todo: add support to load any defined variables in the actual enviroment instead of just secrets.
-// todo: add a development mode where secrets are loaded directly from files.
-
 const variableKeys = [
   "BOT_TOKEN_FILE",
   "N4J_AUTH_FILE",

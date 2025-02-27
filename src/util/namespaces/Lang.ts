@@ -18,7 +18,7 @@ export default {
 
     if (res.type === "embed") {
       return res as any;
-    } else if (res.type === "random_text") { // todo: this functionality maybe should be placed into normal lang manager
+    } else if (res.type === "random_text") { 
       if (res.content.length === 0) {
         throw new Error("Content array is empty.");
       }
