@@ -1,6 +1,7 @@
 import { type Document, model, Schema, Types } from "mongoose";
 import { daysToMilli } from "../functions/formatting/daysToMilli";
 import { id } from "./templates/id";
+import convertToDays from "util/functions/formatting/convertToDays";
 
 /**
  * The status of a proposal.
@@ -61,18 +62,7 @@ export const proposalSchema = new Schema<IProposal>({
      * Max pending days defaults to half of the expiry (2 days unless specified otherwise)
      */
     default: function () {
-      if (!this.expiration) {
-        throw new Error(
-          "Expiration missing: set expiration or explicitly define maxPendingDays.",
-        );
-      }
-
-      const now = new Date();
-      const expirationTime = new Date(this.expiration).getTime();
-      const durationInMillis = expirationTime - now.getTime();
-
-      const days = Math.ceil(durationInMillis / (24 * 60 * 60 * 1000)); // Convert to days
-      return Math.floor(days / 2); // Half of the total days
+      return convertToDays(this.expiration); 
     },
     immutable: true,
   },
