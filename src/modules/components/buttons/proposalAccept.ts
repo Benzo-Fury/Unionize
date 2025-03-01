@@ -2,7 +2,6 @@ import { commandModule, CommandType } from "@sern/handler";
 import { RelationValidator } from "util/classes/db/neo4j/helpers/RelationValidator";
 import { Guild } from "util/schemas/guild.schema";
 import {
-  DirectRelation,
   type N4jSnowflakeRelation,
 } from "../../../util/classes/db/neo4j/models/N4jRelation";
 import {
@@ -120,10 +119,11 @@ function proposalToRelation(prop: IProposal): N4jSnowflakeRelation {
   const data: N4jSnowflakeRelation = {
     relation:
       prop.relation === "partner"
-        ? DirectRelation.Partner
-        : DirectRelation.Parent,
+        ? "PARTNER_OF"
+        : "PARENT_OF",
     user1Id: prop.proposerId,
     user2Id: prop.proposeeId,
+    properties: {}
   };
 
   // Swap users if child relation
