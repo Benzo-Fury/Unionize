@@ -1,6 +1,5 @@
 import { N4jDataInterpreter } from "../base/N4jDataInterpreter";
 import { N4jGuild } from "./N4jGuild";
-import { DirectRelation } from "./N4jRelation";
 
 /**
  * A user that only has an id and guild id.
@@ -49,7 +48,8 @@ export class N4jUser {
       {
         user1Id: this.id,
         user2Id: user instanceof N4jUser ? user.id : user,
-        relation: DirectRelation.Partner,
+        relation: "PARTNER_OF",
+        properties: {},
       },
       this.guild.id,
     );
