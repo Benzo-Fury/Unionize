@@ -8,7 +8,8 @@ import type {
 import type { DatabasePath as DBRelationPath } from "../helpers/RelationSimplifier";
 import { N4jGuild } from "../models/N4jGuild";
 import {
-  DirectRelation,
+  type DBRelation,
+  type LocalRelation,
   N4jRelation,
   type N4jSnowflakeRelation,
 } from "../models/N4jRelation";
@@ -86,7 +87,7 @@ export class N4jDataInterpreter {
       // Checking if error is generic
       const mappedError = this.mapNeo4jError(e);
       if (mappedError) {
-        throw new N4jError(mappedError); 
+        throw new N4jError(mappedError);
       } else {
         throw new Error("Undeclared Cypher Error: " + e);
       }
@@ -172,7 +173,11 @@ export class N4jDataInterpreter {
    * This method will upsert users AND guilds (meaning it will create the users/guild if they do not exist)
    */
   public async createRelation(data: N4jSnowflakeRelation, guildId: string) {
-    const { user1Id, user2Id, relation } = data;
+    let { user1Id, user2Id, relation } = data;
+
+    if (relation === "CHILD_OF") {
+      [user1Id, user2Id] = [user2Id, user1Id]; // Swapping the users
+    }
 
     // Running query
     const result = (await this.getAndRunQuery("createRelation", {
@@ -180,7 +185,7 @@ export class N4jDataInterpreter {
       uid2: user2Id,
       gid: guildId,
       r: relation,
-      p: data.properties || {}, // Cannot be null, will throw errors
+      p: data.properties,
     }))!;
 
     // Extracting result
@@ -193,11 +198,11 @@ export class N4jDataInterpreter {
    * @throws {error} - if users are NOT from same guild
    */
   public async deleteRelation(
-    user1Id: string,
-    user2Id: string,
+    rel: Omit<N4jSnowflakeRelation, "properties">,
     guildId: string,
-    relation: DirectRelation,
   ) {
+    const { user1Id, user2Id, relation } = rel;
+
     // Running query
     await this.getAndRunQuery("deleteQuery", {
       uid1: user1Id,
@@ -364,7 +369,7 @@ export class N4jDataInterpreter {
    * Helper method to create a new N4jRelation instance.
    */
   private createLocalRelationInstance(
-    type: DirectRelation,
+    type: LocalRelation,
     pn: N4jUser | string,
     sn: N4jUser | string,
   ) {
@@ -417,7 +422,7 @@ export class N4jDataInterpreter {
 
     // Converting into class instance.
     return this.createLocalRelationInstance(
-      relation.type as DirectRelation,
+      relation.type as LocalRelation,
       relation.startNodeElementId,
       relation.endNodeElementId,
     );
@@ -436,7 +441,7 @@ export class N4jDataInterpreter {
 
   private n4jRelationToLocalRelation(rel: Relationship) {
     return this.createLocalRelationInstance(
-      rel.type as DirectRelation,
+      rel.type as LocalRelation,
       rel.startNodeElementId,
       rel.endNodeElementId,
     );

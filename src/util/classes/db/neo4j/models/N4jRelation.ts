@@ -1,13 +1,14 @@
 import type { N4jUser } from "./N4jUser";
 
 /**
- * Enum of all direct relationships that the db understands.
+ * A relationship that can be used locally by Javascript
  */
-export enum DirectRelation {
-  Child = "CHILD_PF", // Wont be returned from db unless in a path
-  Parent = "PARENT_OF",
-  Partner = "PARTNER_OF",
-}
+export type LocalRelation = "CHILD_OF" | "PARENT_OF" | "PARTNER_OF";
+/**
+ * A relationship that can be used by the database.
+ * The database does not understand "CHILD_OF"... see: https://dzone.com/articles/modelling-data-neo4j
+ */
+export type DBRelation = Exclude<LocalRelation, "CHILD_OF">;
 
 /**
  * A relation that only has its type defined.
@@ -18,8 +19,8 @@ export enum DirectRelation {
 export interface N4jSnowflakeRelation {
   user1Id: string;
   user2Id: string;
-  relation: DirectRelation;
-  properties?: Record<string, any>;
+  relation: LocalRelation;
+  properties: Record<string, any>;
 }
 
 /**
@@ -27,7 +28,7 @@ export interface N4jSnowflakeRelation {
  */
 export class N4jRelation {
   constructor(
-    public readonly type: DirectRelation,
+    public readonly type: LocalRelation,
     public readonly primaryNode: N4jUser | string,
     public readonly secondaryNode: N4jUser | string,
   ) {}
