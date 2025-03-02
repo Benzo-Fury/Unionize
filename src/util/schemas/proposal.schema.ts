@@ -1,4 +1,5 @@
 import { type Document, model, Schema, Types } from "mongoose";
+import type { LocalRelation } from "util/classes/db/neo4j/models/N4jRelation";
 import { daysToMilli } from "../functions/formatting/daysToMilli";
 import { id } from "./templates/id";
 import convertToDays from "util/functions/formatting/convertToDays";
@@ -8,17 +9,12 @@ import convertToDays from "util/functions/formatting/convertToDays";
  */
 export type ProposalStatus = "pending" | "accepted" | "declined";
 
-/**
- * The type of the proposal (the relation).
- */
-export type ProposalRelation = "parent" | "child" | "partner";
-
 export interface IProposal extends Document {
   readonly _id: Types.ObjectId;
   readonly guildId: string;
   readonly proposerId: string;
   readonly proposeeId: string;
-  readonly relation: ProposalRelation;
+  readonly relation: LocalRelation;
   /**
    * The max amount of days a proposal can be pending for.
    * Essentially the proposal will auto decline after this many days:
@@ -53,7 +49,7 @@ export const proposalSchema = new Schema<IProposal>({
     type: String, // Don't resort back to using "reqString" here, it doesn't work.
     required: true,
     immutable: true,
-    enum: ["parent", "child", "partner"] as ProposalRelation[],
+    enum: ["PARENT_OF", "CHILD_OF", "PARTNER_OF"] as LocalRelation[],
   },
   maxPendingDays: {
     type: Number,
