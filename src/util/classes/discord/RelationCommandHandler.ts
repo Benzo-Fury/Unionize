@@ -1,14 +1,13 @@
 import { Embed } from "#embed";
 import type { Context, SDT } from "@sern/handler";
 import { ActionRowBuilder, ButtonBuilder } from "discord.js";
-import { directRelToDbRel } from "util/functions/other/directRelToDbRel";
 import Lang from "util/namespaces/Lang";
 import { Guild } from "util/schemas/guild.schema";
 import { Proposal } from "util/schemas/proposal.schema";
 import { createPropButton } from "util/templates/buttons/proposalManagement";
 import { RelationSimplifier } from "../db/neo4j/helpers/RelationSimplifier";
 import { RelationValidator } from "../db/neo4j/helpers/RelationValidator";
-import { DirectRelation } from "../db/neo4j/models/N4jRelation";
+import type { LocalRelation } from "../db/neo4j/models/N4jRelation";
 import { N4jUser } from "../db/neo4j/models/N4jUser";
 
 /**
@@ -42,17 +41,11 @@ export class RCH {
       );
     }
 
-    // Extracting data
-    const n4j = sdt.deps.N4jDataInterpreter;
     // Creating the users (modeling the users) in future could be handled by a plugin and passed via the state
     // However this does not work at the moment due to sern creating a deep clone of everything passed via state.
-    const proposer = new N4jUser(ctx.user.id, ctx.guild.id, n4j);
-    const proposee = new N4jUser(
-      ctx.interaction.options.getUser("user")!.id,
-      ctx.guild.id,
-      n4j,
-    );
-    const relation = sdt.state.relationType as DirectRelation;
+    const proposer = N4jUser.fromCtx(ctx);
+    const proposee = N4jUser.fromOptions(ctx);
+    const relation = sdt.state.relationType as LocalRelation;
 
     // ------------------- Running Checks ------------------- //
 
@@ -102,11 +95,7 @@ export class RCH {
     const guildDoc = await Guild.getById(ctx.guild.id);
 
     // Generating relation path
-    const relationPath = await n4j.generateRelationPath(
-      proposer.id,
-      proposee.id,
-      ctx.guild.id,
-    );
+    const relationPath = await proposer.pathTo(proposee);
 
     if (relationPath) {
       // Simplifying the path
@@ -147,12 +136,11 @@ export class RCH {
 
     // Create the proposal
     try {
-      // Creating document in db
       proposalDoc = await Proposal.create({
         guildId: ctx.guild!.id,
-        proposerId: proposer.id,
+        proposerId: proposer.id, // Do not worry about swapping proposer and proposee... data interpreter will handle
         proposeeId: proposee.id,
-        relation: directRelToDbRel(relation),
+        relation: relation,
       });
     } catch (e: any) {
       if (e.code === 11000) {
@@ -208,13 +196,13 @@ export class RCH {
   private static handleRelationDeleteCommand(ctx: Context, sdt: SDT) {}
 
   // ------------- Helpers -------------
-  private static verbifyProposal(type: DirectRelation) {
+  private static verbifyProposal(type: LocalRelation) {
     switch (type) {
-      case DirectRelation.Child:
+      case "CHILD_OF":
         return "adopt";
-      case DirectRelation.Parent:
+      case "PARENT_OF":
         return "parentify";
-      case DirectRelation.Partner:
+      case "PARTNER_OF":
         return "marry";
     }
   }

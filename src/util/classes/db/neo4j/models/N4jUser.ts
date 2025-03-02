@@ -1,4 +1,5 @@
 import { type Context, Service } from "@sern/handler";
+import type { CommandInteractionOptionResolver } from "discord.js";
 import { N4jDataInterpreter } from "../base/N4jDataInterpreter";
 import { N4jGuild } from "./N4jGuild";
 import type { LocalRelation } from "./N4jRelation";
@@ -44,6 +45,25 @@ export class N4jUser {
 
     return new N4jUser(ctx.user.id, ctx.guild.id, n4j);
   }
+  /**
+   * Creates a N4jUser from a command options.
+   * The options must contain a User option with the specific name.
+   * @param name The name of the user option (defaults to "user")
+   */
+  public static fromOptions(ctx: Context, name = "user") {
+    // Resolving n4j
+    const n4j = Service("N4jDataInterpreter");
+
+    // Resolving user
+    const u = ctx.interaction.options.getUser(name);
+    if (!u) throw new Error(`${name} does not exist in options.`);
+
+    if (!ctx.guild) {
+      throw new Error("Guild is not defined.");
+    }
+
+    return new N4jUser(ctx.user.id, ctx.guild.id, n4j);
+  }
 
   public async marry(partner: N4jUser | string) {
     partner = this.userParameter(partner);
@@ -76,7 +96,21 @@ export class N4jUser {
     return this.remRelation("PARENT_OF", parent);
   }
 
-  public async disown() {}
+  public async disown(child: N4jUser | string) {
+    child = this.userParameter(child);
+
+    return this.remRelation("CHILD_OF", child);
+  }
+
+  public async pathTo(user: N4jUser | string) {
+    user = this.userParameter(user);
+
+    return this.dataInterpreter.generateRelationPath(
+      this.id,
+      user,
+      this.guild.id,
+    );
+  }
 
   public toString() {
     return `<@${this.id}>`;
