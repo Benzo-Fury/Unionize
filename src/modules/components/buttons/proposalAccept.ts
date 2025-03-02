@@ -1,9 +1,8 @@
 import { commandModule, CommandType } from "@sern/handler";
 import { RelationValidator } from "util/classes/db/neo4j/helpers/RelationValidator";
 import { Guild } from "util/schemas/guild.schema";
-import {
-  type N4jSnowflakeRelation,
-} from "../../../util/classes/db/neo4j/models/N4jRelation";
+import { type N4jSnowflakeRelation } from "../../../util/classes/db/neo4j/models/N4jRelation";
+import Lang from "../../../util/namespaces/Lang";
 import {
   type IProposal,
   ProposalModel,
@@ -12,7 +11,6 @@ import {
 export interface CState extends Record<string, unknown> {
   proposal: IProposal;
 }
-import Lang from '../../../util/namespaces/Lang'
 
 export default commandModule({
   name: "accept-proposal",
@@ -64,9 +62,9 @@ export default commandModule({
 
       // Checking if the relation already exists
       if (
-        (sP === "partner" && proposal.relation === "partner") ||
-        (sP === "child" && proposal.relation === "child") ||
-        (sP === "parent" && proposal.relation === "parent")
+        (sP === "partner" && proposal.relation === "PARTNER_OF") ||
+        (sP === "child" && proposal.relation === "CHILD_OF") ||
+        (sP === "parent" && proposal.relation === "PARENT_OF")
       ) {
         return i.reply({
           content: Lang.getRes<"text">(
@@ -117,17 +115,14 @@ export default commandModule({
  */
 function proposalToRelation(prop: IProposal): N4jSnowflakeRelation {
   const data: N4jSnowflakeRelation = {
-    relation:
-      prop.relation === "partner"
-        ? "PARTNER_OF"
-        : "PARENT_OF",
+    relation: prop.relation === "PARTNER_OF" ? "PARTNER_OF" : "PARENT_OF",
     user1Id: prop.proposerId,
     user2Id: prop.proposeeId,
-    properties: {}
+    properties: {},
   };
 
   // Swap users if child relation
-  if (prop.relation === "child") {
+  if (prop.relation === "CHILD_OF") {
     const u1 = data.user1Id;
     data.user1Id = data.user2Id;
     data.user2Id = u1;
