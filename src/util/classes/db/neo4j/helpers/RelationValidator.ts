@@ -1,7 +1,7 @@
 import config from "#config";
 import type { IntRange } from "ts/types/IntRange";
 import type { IGuild } from "util/schemas/guild.schema";
-import { DirectRelation } from "../models/N4jRelation";
+import type { LocalRelation } from "../models/N4jRelation";
 import {
   type DatabasePath,
   type RelationPath,
@@ -20,7 +20,7 @@ export class RelationValidator {
   constructor(
     private guild: IGuild,
     private path: RelationPath,
-    private proposedRelation: DirectRelation,
+    private proposedRelation: LocalRelation,
   ) {}
 
   public check():
@@ -72,12 +72,9 @@ export class RelationValidator {
     const usersRelation = this.path[0];
 
     return (
-      (usersRelation === "partner" &&
-        this.proposedRelation === DirectRelation.Partner) ||
-      (usersRelation === "child" &&
-        this.proposedRelation === DirectRelation.Child) ||
-      (usersRelation === "parent" &&
-        this.proposedRelation === DirectRelation.Parent)
+      (usersRelation === "partner" && this.proposedRelation === "PARTNER_OF") ||
+      (usersRelation === "child" && this.proposedRelation === "CHILD_OF") ||
+      (usersRelation === "parent" && this.proposedRelation === "PARENT_OF")
     );
   }
 }
