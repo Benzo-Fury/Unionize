@@ -58,7 +58,18 @@ export const proposalSchema = new Schema<IProposal>({
      * Max pending days defaults to half of the expiry (2 days unless specified otherwise)
      */
     default: function () {
-      return convertToDays(this.expiration); 
+      if (!this.expiration) {
+        throw new Error(
+          "Expiration missing: set expiration or explicitly define maxPendingDays.",
+        );
+      }
+
+      const now = new Date();
+      const expirationTime = new Date(this.expiration).getTime();
+      const durationInMillis = expirationTime - now.getTime();
+
+      const days = convertToDays(durationInMillis) ; // Convert to days
+      return Math.floor(days / 2); // Half of the total days
     },
     immutable: true,
   },
