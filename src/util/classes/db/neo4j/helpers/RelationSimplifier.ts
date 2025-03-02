@@ -12,7 +12,7 @@
  * Visit https://www.gnu.org/licenses/agpl-3.0.html for details one the license.
  */
 import type { IntRange } from "ts/types/IntRange";
-import type { DirectRelation } from "../models/N4jRelation";
+import type { LocalRelation } from "../models/N4jRelation";
 
 /**
  * A base relationship that the validator could return.
@@ -59,7 +59,7 @@ export type Relation = "great" | BaseRelationships | CousinRelationships;
  * @example
  * const dbPath: DatabasePath = ["PARENT_OF", "PARENT_OF", "PARENT_OF"]; // (["parent's" "parent's" "parent"])
  */
-export type DatabasePath = DirectRelation[];
+export type DatabasePath = LocalRelation[];
 
 /**
  * A processed version of the raw relationship path.
