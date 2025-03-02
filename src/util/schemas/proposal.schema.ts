@@ -128,4 +128,4 @@ proposalSchema.index(
   },
 );
 
-export const ProposalModel = model<IProposal>("Proposal", proposalSchema);
+export const Proposal = model<IProposal>("Proposal", proposalSchema);

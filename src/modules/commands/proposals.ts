@@ -6,7 +6,7 @@ import {
   Page,
 } from "../../util/classes/discord/EmbedPaginator";
 import { guildOnly } from "../../util/plugins/guildOnly";
-import { ProposalModel } from "../../util/schemas/proposal.schema";
+import { Proposal } from "../../util/schemas/proposal.schema";
 import { createPropButton } from "../../util/templates/buttons/proposalManagement";
 import { Embed } from "../../util/templates/embeds/Embed";
 import { ProposalEmbed } from "../../util/templates/embeds/ProposalEmbed";
@@ -22,7 +22,7 @@ export default commandModule({
     const paginator = new EmbedPaginator(ctx.interaction, sdt);
 
     // Finding all proposals related to user
-    const proposals = await ProposalModel.find({
+    const proposals = await Proposal.find({
       $and: [
         {
           guildId: ctx.guild!.id,

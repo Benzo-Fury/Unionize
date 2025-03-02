@@ -5,7 +5,7 @@ import { type N4jSnowflakeRelation } from "../../../util/classes/db/neo4j/models
 import Lang from "../../../util/namespaces/Lang";
 import {
   type IProposal,
-  ProposalModel,
+  Proposal,
 } from "../../../util/schemas/proposal.schema";
 
 export interface CState extends Record<string, unknown> {
@@ -26,7 +26,7 @@ export default commandModule({
     }
 
     // Fetch proposal from db
-    const proposal = await ProposalModel.findOne({ _id: sdt.params });
+    const proposal = await Proposal.findOne({ _id: sdt.params });
 
     // Ensuring a proposal actually exists
     if (!proposal) {
@@ -57,7 +57,7 @@ export default commandModule({
     if (rPath) {
       const guildDoc = await Guild.getById(proposal.guildId);
 
-      const relValidator = new RelationValidator(guildDoc, rPath);
+      const relValidator = new RelationValidator(guildDoc, rPath, proposal.relation);
       const sP = relValidator.simplifiedPath.join(" ");
 
       // Checking if the relation already exists
