@@ -1,11 +1,12 @@
 import { commandModule, CommandType } from "@sern/handler";
+import { RelationSimplifier } from "util/classes/db/neo4j/helpers/RelationSimplifier";
 import { RelationValidator } from "util/classes/db/neo4j/helpers/RelationValidator";
 import { Guild } from "util/schemas/guild.schema";
 import { type N4jSnowflakeRelation } from "../../../util/classes/db/neo4j/models/N4jRelation";
 import Lang from "../../../util/namespaces/Lang";
 import {
   type IProposal,
-  ProposalModel,
+  Proposal,
 } from "../../../util/schemas/proposal.schema";
 
 export interface CState extends Record<string, unknown> {
@@ -26,7 +27,7 @@ export default commandModule({
     }
 
     // Fetch proposal from db
-    const proposal = await ProposalModel.findOne({ _id: sdt.params });
+    const proposal = await Proposal.findOne({ _id: sdt.params });
 
     // Ensuring a proposal actually exists
     if (!proposal) {
@@ -57,8 +58,14 @@ export default commandModule({
     if (rPath) {
       const guildDoc = await Guild.getById(proposal.guildId);
 
-      const relValidator = new RelationValidator(guildDoc, rPath);
-      const sP = relValidator.simplifiedPath.join(" ");
+      const simplifiedPathArray = new RelationSimplifier(rPath).simplify();
+      const sP = simplifiedPathArray[0];
+
+      const relValidator = new RelationValidator(
+        guildDoc,
+        simplifiedPathArray,
+        proposal.relation,
+      );
 
       // Checking if the relation already exists
       if (
@@ -89,7 +96,7 @@ export default commandModule({
             "commands.relation_based.errors.relation_not_allowed",
             {
               proposee: `<@${proposal.proposeeId}>`,
-              relation: sP,
+              relation: simplifiedPathArray.join(" "),
             },
           ),
           ephemeral: true,
@@ -115,18 +122,11 @@ export default commandModule({
  */
 function proposalToRelation(prop: IProposal): N4jSnowflakeRelation {
   const data: N4jSnowflakeRelation = {
-    relation: prop.relation === "PARTNER_OF" ? "PARTNER_OF" : "PARENT_OF",
+    relation: prop.relation,
     user1Id: prop.proposerId,
     user2Id: prop.proposeeId,
     properties: {},
   };
-
-  // Swap users if child relation
-  if (prop.relation === "CHILD_OF") {
-    const u1 = data.user1Id;
-    data.user1Id = data.user2Id;
-    data.user2Id = u1;
-  }
 
   return data;
 }

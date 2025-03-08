@@ -12,41 +12,57 @@
   "commands": {
     "relation_based": {
       "success": {
-        "embed": {
-          "type": "embed",
+        "create": {
           "embed": {
-            "title": "New Proposal!!"
+            "type": "embed",
+            "embed": {
+              "title": "New Proposal!!"
+            }
+          },
+          "descs": {
+            "type": "random_text",
+            "content": [
+              "Hey {proposee}, {proposer} wants to {verb} you! What do you think {emoji.wink}?",
+              "Exciting news, {proposee}! {proposer} has proposed to {verb} you. Will you accept {emoji.heart}?",
+              "{proposee}, {proposer} thinks you'd make the perfect addition to their family by {verb}ing you. Are you ready {emoji.party}?",
+              "Wow, {proposee}, {proposer} is asking to {verb} you. Will you go ahead with it {emoji.happy}?",
+              "{proposee}, {proposer} believes it's time to take a big step and {verb} you. What do you say {emoji.smug}?",
+              "Hey {proposee}, {proposer} has a big question for you: Will you let them {verb} you {emoji.info}?",
+              "Guess what, {proposee}? {proposer} wants to {verb} you. Are you on board {emoji.starStruck}?",
+              "{proposee}, {proposer} has taken the first step to {verb} you. What will your answer be {emoji.thinking}?",
+              "Big moment, {proposee}! {proposer} is proposing to {verb} you. Will you accept {emoji.uwu}?",
+              "This is your moment, {proposee}. {proposer} wants to {verb} you and make it official. Do you agree {emoji.success}?",
+              "{proposee}, {proposer} believes you'd be a perfect match to {verb}. Are you in {emoji.party}?",
+              "Hey {proposee}, {proposer} thinks you're amazing enough to {verb} you. What do you think {emoji.happy}?",
+              "Excuse me, {proposee}, but {proposer} has decided to {verb} you. Do you accept their proposal {emoji.info}?",
+              "Wow, {proposee}, {proposer} has chosen to {verb} you. What's your decision {emoji.smug}?",
+              "Attention, {proposee}: {proposer} wants to {verb} you. Are you ready for this {emoji.success}?",
+              "Big decision, {proposee}. {proposer} wants to {verb} you. What’s your call {emoji.starStruck}?",
+              "{proposee}, {proposer} is making the bold move to {verb} you. Are you in {emoji.thinking}?",
+              "{proposee}, {proposer} says they can’t imagine this without {verb}ing you. Will you make it happen {emoji.wink}?",
+              "{proposee}, {proposer} has proposed to {verb} you. Your response could change everything {emoji.happy}!",
+              "{proposee}, {proposer} has made a big decision to {verb} you. What’s your reply {emoji.uwu}?"
+            ]
           }
         },
-        "descs": {
-          "type": "random_text",
-          "content": [
-            "Hey {proposee}, {proposer} wants to {verb} you! What do you think {emoji.wink}?",
-            "Exciting news, {proposee}! {proposer} has proposed to {verb} you. Will you accept {emoji.heart}?",
-            "{proposee}, {proposer} thinks you'd make the perfect addition to their family by {verb}ing you. Are you ready {emoji.party}?",
-            "Wow, {proposee}, {proposer} is asking to {verb} you. Will you go ahead with it {emoji.happy}?",
-            "{proposee}, {proposer} believes it's time to take a big step and {verb} you. What do you say {emoji.smug}?",
-            "Hey {proposee}, {proposer} has a big question for you: Will you let them {verb} you {emoji.info}?",
-            "Guess what, {proposee}? {proposer} wants to {verb} you. Are you on board {emoji.starStruck}?",
-            "{proposee}, {proposer} has taken the first step to {verb} you. What will your answer be {emoji.thinking}?",
-            "Big moment, {proposee}! {proposer} is proposing to {verb} you. Will you accept {emoji.uwu}?",
-            "This is your moment, {proposee}. {proposer} wants to {verb} you and make it official. Do you agree {emoji.success}?",
-            "{proposee}, {proposer} believes you'd be a perfect match to {verb}. Are you in {emoji.party}?",
-            "Hey {proposee}, {proposer} thinks you're amazing enough to {verb} you. What do you think {emoji.happy}?",
-            "Excuse me, {proposee}, but {proposer} has decided to {verb} you. Do you accept their proposal {emoji.info}?",
-            "Wow, {proposee}, {proposer} has chosen to {verb} you. What's your decision {emoji.smug}?",
-            "Attention, {proposee}: {proposer} wants to {verb} you. Are you ready for this {emoji.success}?",
-            "Big decision, {proposee}. {proposer} wants to {verb} you. What’s your call {emoji.starStruck}?",
-            "{proposee}, {proposer} is making the bold move to {verb} you. Are you in {emoji.thinking}?",
-            "{proposee}, {proposer} says they can’t imagine this without {verb}ing you. Will you make it happen {emoji.wink}?",
-            "{proposee}, {proposer} has proposed to {verb} you. Your response could change everything {emoji.happy}!",
-            "{proposee}, {proposer} has made a big decision to {verb} you. What’s your reply {emoji.uwu}?"
-          ]
+        "delete": {
+          "type": "text",
+          "content": "You have {verb}'ed your {noun}, {proposee} {emoji.happy}."
+        },
+        "delete_plural": {
+          "type": "text",
+          "content": "You have {verb}'ed your {noun}, {proposee1} and {proposee2} {emoji.happy}."
         }
       },
       "dm": {
-        "type": "text",
-        "content": "{proposer} just sent you a Proposal. Go check it with {command.proposals}."
+        "create": {
+          "type": "text",
+          "content": "{proposer} just sent you a Proposal. Go check it with {command.proposals}."
+        },
+        "delete": {
+          "type": "text",
+          "content": "{proposer} just decided to {verb} you {emoji.sad}."
+        }
       },
       "errors": {
         "proposal_already_exists": {

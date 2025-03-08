@@ -1,5 +1,5 @@
 import { commandModule, CommandType } from "@sern/handler";
-import { ProposalModel } from "../../../util/schemas/proposal.schema";
+import { Proposal } from "../../../util/schemas/proposal.schema";
 import Lang from '../../../util/namespaces/Lang'
 
 export default commandModule({
@@ -13,7 +13,7 @@ export default commandModule({
     }
 
     // Fetch proposal from db
-    const proposal = await ProposalModel.findOne({ _id: sdt.params });
+    const proposal = await Proposal.findOne({ _id: sdt.params });
 
     // Ensuring a proposal actually exists
     if (!proposal) {

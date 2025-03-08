@@ -1,21 +1,37 @@
 // Deletes a relationship between 2 users
 
-MERGE (g:Guild { id: $gid })
-ON CREATE SET
-  g.createdOn = timestamp()
+WITH $r AS rType, $gid AS gid, $uid1 AS uid1, $uid2 AS uid2
 
-OPTIONAL MATCH 
-  (u1:User {id: $uid1})-[:MEMBER_OF]->(g),
-  (u2:User {id: $uid2})-[:MEMBER_OF]->(g)
+MERGE (g:Guild { id: gid })
+ON CREATE SET g.createdOn = timestamp()
 
-// Check if either user is not found
-WITH u1, u2, g
-WHERE u1 IS NOT NULL AND u2 IS NOT NULL // Only continuing if if both exist
+WITH g, rType, uid1, uid2
+MERGE (u1:User { id: uid1 })-[:MEMBER_OF]->(g)
+ON CREATE SET u1.createOn = timestamp()
 
-// Match the relationship between the users based on the rel parameter
-WITH u1, u2, r
-OPTIONAL MATCH (u1)-[r]-(u2) // Biodirectional!!!!! Does not care what direction the relation was created on
+WITH g, u1, rType, uid1, uid2
+MERGE (u2:User { id: uid2 })-[:MEMBER_OF]->(g)
+ON CREATE SET u2.createOn = timestamp()
 
-// If the relationship exists, delete it
-WITH r
-CALL apoc.refactor.deleteRelationship(r)
+WITH u1, u2, rType
+
+CALL apoc.do.case([
+  rType = 'PARTNER_OF', '
+    MATCH (u1)-[r:PARTNER_OF]-(u2)
+    DELETE r
+  ',
+  rType = 'CHILD_OF', '
+    MATCH (u1)-[r:CHILD_OF]-(u2)
+    DELETE r
+  ',
+  rType = 'PARENT_OF', '
+    MATCH (u1)-[r:PARENT_OF]-(u2)
+    DELETE r
+  '
+],
+'
+  RETURN null
+', { u1: u1, u2: u2 }
+) YIELD value
+
+RETURN 0

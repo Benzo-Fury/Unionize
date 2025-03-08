@@ -13,11 +13,6 @@ export class Bot extends Client implements Init {
   }
 
   async init() {
-    // Logging in
-    const evm = Service("EVM");
-
-    await this.login(evm.load("BOT_TOKEN_FILE"));
-
     // Resolving and storing commands
     await this.application?.commands.fetch();
 

@@ -156,7 +156,9 @@ export class EmbedPaginator {
 
     // Disposed clicks
     const handleInvalidUserClick = async (i: ButtonInteraction) => {
-      await i.reply(langManager.getResponse<"text">("button_wrong_person"));
+      await i.reply(
+        langManager.getResponse<"text">("errors.button_wrong_person"),
+      );
     };
 
     moveButtonListener.on("dispose", handleInvalidUserClick);

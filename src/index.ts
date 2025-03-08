@@ -1,5 +1,5 @@
 import lang from "#lang";
-import { makeDependencies, Sern } from "@sern/handler";
+import { makeDependencies, Sern, Service } from "@sern/handler";
 import { Logger } from "util/classes/local/Logger.ts";
 import config from "./config.ts";
 import { MDBClient } from "./util/classes/db/mongodb/MDBClient.ts";
@@ -48,3 +48,5 @@ await makeDependencies(({ add, swap }) => {
 
 // Initializing sern with pre defined configuration
 Sern.init(config.sern);
+
+await Service("@sern/client").login(evm.load("BOT_TOKEN_FILE"));

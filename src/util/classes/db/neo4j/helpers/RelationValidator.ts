@@ -1,6 +1,7 @@
 import config from "#config";
 import type { IntRange } from "ts/types/IntRange";
 import type { IGuild } from "util/schemas/guild.schema";
+import type { LocalRelation } from "../models/N4jRelation";
 import {
   type DatabasePath,
   type RelationPath,
@@ -16,23 +17,29 @@ export type IL = IntRange<0, 7>;
  * Handles the conversion of processed Neo4j Relationship path into a IL.
  */
 export class RelationValidator {
-  public simplifiedPath: RelationPath;
-
   constructor(
     private guild: IGuild,
-    path: DatabasePath,
-  ) {
-    // Convert db path to relation path
-    const relSimplifier = new RelationSimplifier(path);
+    private path: RelationPath,
+    private proposedRelation: LocalRelation,
+  ) {}
 
-    this.simplifiedPath = relSimplifier.simplify();
-  }
+  public check():
+    | { valid: false; reason: "Already exists" | "Not allowed" }
+    | { valid: true } {
+    const generatedIL = this.calculateIL();
 
-  public check() {
-    // Creating IL
-    const localIL = this.calculateIL();
-
-    return localIL <= this.guild.settings.relationships.IL;
+    // Checking if the relation already exists
+    if (this.doesRelationExists())
+      return { valid: false, reason: "Already exists" };
+    // Chceck if the generated IL is lower. if yes, we allow, else return false
+    else if (generatedIL <= this.guild.settings.relationships.IL) {
+      return {
+        valid: false,
+        reason: "Not allowed",
+      };
+    } else {
+      return { valid: true };
+    }
   }
 
   /**
@@ -40,10 +47,10 @@ export class RelationValidator {
    */
   private calculateIL(): IL {
     let il = 0;
-    let greatCount = this.simplifiedPath.filter((r) => r === "great").length;
+    let greatCount = this.path.filter((r) => r === "great").length;
 
     // Extract the closest actual relation (e.g., "sibling", "2nd cousin")
-    let relation = this.simplifiedPath.filter((r) => r !== "great").join(" ");
+    let relation = this.path.filter((r) => r !== "great").join(" ");
 
     // Base IL from the closest relation
     il = config.other.ILMap[relation] ?? 0;
@@ -59,5 +66,15 @@ export class RelationValidator {
     }
 
     return il as IL;
+  }
+
+  private doesRelationExists(): boolean {
+    const usersRelation = this.path[0];
+
+    return (
+      (usersRelation === "partner" && this.proposedRelation === "PARTNER_OF") ||
+      (usersRelation === "child" && this.proposedRelation === "CHILD_OF") ||
+      (usersRelation === "parent" && this.proposedRelation === "PARENT_OF")
+    );
   }
 }

@@ -26,10 +26,12 @@ export type Query =
   | "matchRelation"
   | "matchUsers"
   | "matchTree"
+  | "matchAllRelType"
   | "createRelation"
   | "createUser"
   | "createGuild"
-  | "deleteQuery";
+  | "deleteRelation"
+  | "deleteAllRelType";
 
 export type QueryParameters = Record<string, any>;
 
@@ -153,7 +155,7 @@ export class N4jDataInterpreter {
     }))!;
 
     // Returning user created.
-    return this.recordToUser(result);
+    return this.recordToUser(result, guildId);
   }
 
   /**
@@ -176,6 +178,7 @@ export class N4jDataInterpreter {
     let { user1Id, user2Id, relation } = data;
 
     if (relation === "CHILD_OF") {
+      relation = "PARENT_OF";
       [user1Id, user2Id] = [user2Id, user1Id]; // Swapping the users
     }
 
@@ -201,10 +204,15 @@ export class N4jDataInterpreter {
     rel: Omit<N4jSnowflakeRelation, "properties">,
     guildId: string,
   ) {
-    const { user1Id, user2Id, relation } = rel;
+    let { user1Id, user2Id, relation } = rel;
+
+    if (relation === "CHILD_OF") {
+      relation = "PARENT_OF";
+      [user1Id, user2Id] = [user2Id, user1Id]; // Swapping the users
+    }
 
     // Running query
-    await this.getAndRunQuery("deleteQuery", {
+    await this.getAndRunQuery("deleteRelation", {
       uid1: user1Id,
       uid2: user2Id,
       gid: guildId,
@@ -212,6 +220,25 @@ export class N4jDataInterpreter {
     });
 
     // Return nothing - void method
+  }
+
+  /**
+   * Deletes all relations of a certain type relative to a specified user.
+   */
+  public async deleteAll(userId: string, guildId: string, rel: LocalRelation) {
+    let reverse = false;
+
+    if (rel === "CHILD_OF") {
+      rel = "PARENT_OF";
+      reverse = true;
+    }
+
+    const res = await this.getAndRunQuery("deleteAllRelType", {
+      gid: guildId,
+      uid: userId,
+      rT: rel,
+      rev: reverse,
+    });
   }
 
   /**
@@ -246,7 +273,7 @@ export class N4jDataInterpreter {
 
     if (!result) return null;
 
-    return this.recordToUser(result.records[0]);
+    return this.recordToUser(result.records[0], guildId);
   }
 
   /**
@@ -260,7 +287,7 @@ export class N4jDataInterpreter {
     }))!;
 
     // Returning matched users
-    return result.records.map((r) => this.recordToUser(r));
+    return result.records.map((r) => this.recordToUser(r, guildId));
   }
 
   /**
@@ -317,6 +344,30 @@ export class N4jDataInterpreter {
     return path;
   }
 
+  /**
+   * Gets all of a certain relationship.
+   * For example: getAll("Children")
+   */
+  public async getAll(userId: string, guildId: string, rel: LocalRelation) {
+    let reverse = false;
+
+    if (rel === "CHILD_OF") {
+      rel = "PARENT_OF";
+      reverse = true;
+    }
+
+    const result = await this.getAndRunQuery("matchAllRelType", {
+      gid: guildId,
+      uid: userId,
+      r: rel,
+      rev: reverse,
+    });
+
+    if (!result) return null;
+
+    return result.records.map((r) => this.recordToUser(r, guildId));
+  }
+
   // ---------- Helper Methods ---------- //
 
   /**
@@ -348,49 +399,17 @@ export class N4jDataInterpreter {
   // -------- Transition Methods -------- //
 
   /**
-   * Helper method to create a new N4jUser instance.
-   */
-  private createLocalUserInstance(
-    id: string,
-    guild: N4jGuild | string,
-    elementId?: string,
-  ) {
-    return new N4jUser(id, guild, this, elementId);
-  }
-
-  /**
-   * Helper method to create a new N4jGuild instance.
-   */
-  private createLocalGuildInstance(id: string, addedDate: Date) {
-    return new N4jGuild(id, addedDate.getDate());
-  }
-
-  /**
-   * Helper method to create a new N4jRelation instance.
-   */
-  private createLocalRelationInstance(
-    type: LocalRelation,
-    pn: N4jUser | string,
-    sn: N4jUser | string,
-  ) {
-    return new N4jRelation(type, pn, sn);
-  }
-
-  /**
    * Converts a Neo4j `Record` containing a `User` node (`u`) and a `Guild` node (`g`)
    * into an instance of `N4jUser` with the associated guild information.
    *
    * @throws {Error} if `record` does not contain the expected `u` and `g` fields.
    */
-  private recordToUser(record: RecordShape) {
+  private recordToUser(record: RecordShape, guild: N4jGuild | string) {
     // Extracting user
     const rUser: Node = record.get("u");
-    const rGuild: Node = record.get("g");
+    const guildId = guild instanceof N4jGuild ? guild.id : guild;
 
-    return this.createLocalUserInstance(
-      rUser.properties.id,
-      rGuild.properties.id,
-    );
+    return new N4jUser(rUser.properties.id, guildId, this, rUser.elementId);
   }
 
   /**
@@ -404,10 +423,7 @@ export class N4jDataInterpreter {
     const guild: Node = record.get("g");
 
     // Converting into class instance.
-    return this.createLocalGuildInstance(
-      guild.properties.id,
-      guild.properties.addedOn,
-    );
+    return new N4jGuild(guild.properties.id, guild.properties.addedOn);
   }
 
   /**
@@ -421,7 +437,7 @@ export class N4jDataInterpreter {
     const relation: Relationship = record.get("r");
 
     // Converting into class instance.
-    return this.createLocalRelationInstance(
+    return new N4jRelation(
       relation.type as LocalRelation,
       relation.startNodeElementId,
       relation.endNodeElementId,
@@ -432,15 +448,11 @@ export class N4jDataInterpreter {
    * Converts a neo4j node instance to a user
    */
   private nodeToUser(node: Node, guildId: string) {
-    return this.createLocalUserInstance(
-      node.properties.id,
-      guildId,
-      node.elementId,
-    );
+    return new N4jUser(node.properties.id, guildId, this, node.elementId);
   }
 
   private n4jRelationToLocalRelation(rel: Relationship) {
-    return this.createLocalRelationInstance(
+    return new N4jRelation(
       rel.type as LocalRelation,
       rel.startNodeElementId,
       rel.endNodeElementId,
