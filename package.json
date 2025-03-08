@@ -7,8 +7,7 @@
   "scripts": {
     "start": "bun ./src/index.ts",
     "start:dev": "bun --watch ./src/index.ts",
-    "publish": "bun ./scripts/ts/publish.ts",
-    "build": "echo todo",
+    "commands:publish": "bun ./scripts/ts/publish.ts",
     "docker:n4j:flush": "docker volume rm unionize_neo4j-data",
     "docker:mdb:flush": "docker volume rm unionize_mongodb-data",
     "docker:mdb:start": "docker compose -f ./docker/composers/docker-compose.yaml -f ./docker/composers/docker-compose.dev.yaml up -d mongo",
@@ -33,10 +32,10 @@
   },
   "dependencies": {
     "@napi-rs/canvas": "^0.1.60",
-    "@sern/handler": "^4.2.0",
+    "@sern/handler": "^4.2.4",
     "@sern/publisher": "^1.1.2",
     "d3": "^7.9.0",
-    "discord.js": "^14.16.3",
+    "discord.js": "^14.18.0",
     "graphviz": "^0.0.9",
     "install": "^0.13.0",
     "mongoose": "^8.7.3",
