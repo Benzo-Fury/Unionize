@@ -1,12 +1,5 @@
 import type { EnvironmentVariables } from "ts/interfaces/EnvironmentVariables";
 
-const variableKeys = [
-  "BOT_TOKEN_FILE",
-  "N4J_AUTH_FILE",
-  "MONGO_USERNAME_FILE",
-  "MONGO_PASSWORD_FILE",
-];
-
 type EnvironmentVariable = keyof EnvironmentVariables;
 
 /**
@@ -24,12 +17,14 @@ export class EVM {
 
   public static async new() {
     const evm = new EVM();
-    for (const key of variableKeys) {
+
+    // Looping through everything in the environment and loading it
+    for (let key in Bun.env) {
       let value = Bun.env[key]!;
 
-      // Checking if key is actually a file
-      if (key.endsWith("FILE")) {
-        // Resolving if true
+      // Checking if key ends with file
+      if (key.endsWith("_FILE")) {
+        key = key.replace("_FILE", "") as EnvironmentVariable;
         value = await evm.resolveSecret(value);
       }
 
@@ -49,7 +44,7 @@ export class EVM {
     return value;
   }
 
-  private async resolveSecret(secretPath: string) {
+  private resolveSecret(secretPath: string) {
     // Resolve the secret
     const file = Bun.file(secretPath);
 

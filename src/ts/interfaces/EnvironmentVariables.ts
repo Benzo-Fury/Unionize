@@ -1,6 +1,7 @@
 export interface EnvironmentVariables {
-  BOT_TOKEN_FILE: string;
-  N4J_AUTH_FILE: string;
-  MONGO_USERNAME_FILE: string;
-  MONGO_PASSWORD_FILE: string;
+  BOT_TOKEN: string;
+  N4J_AUTH: string;
+  MONGO_USERNAME: string;
+  MONGO_PASSWORD: string;
+  PROCESS_MODE: "DEV" | "PROD";
 }

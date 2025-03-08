@@ -1,5 +1,6 @@
 import type { Disposable, Init } from "@sern/handler";
 import { connect, disconnect, plugin } from "mongoose";
+import { isDevMode } from "util/functions/other/isDevMode";
 
 export interface MDBClientOptions {
   username: string;
@@ -15,7 +16,7 @@ export class MDBClient implements Disposable, Init {
   private static readonly defaultOptions: Required<MDBClientOptions> = {
     username: "",
     password: "",
-    ip: "mongo",
+    ip: "localhost",
     port: 27017,
     dbName: "",
   };
@@ -63,6 +64,6 @@ export class MDBClient implements Disposable, Init {
   private createUri(data: MDBClientOptions) {
     const { username, password, ip, port, dbName } = data;
 
-    return `mongodb://${username}:${password}@${ip}:${port}/${dbName}`;
+    return `mongodb://${isDevMode() ? "" : `${username}:${password}@`}${ip}:${port}/${dbName}`;
   }
 }

@@ -28,14 +28,14 @@ await makeDependencies(({ add, swap }) => {
     "N4jClient",
     new N4jClient({
       ip: "neo4j", // Using container name
-      auth: evm.load("N4J_AUTH_FILE") as AuthString,
+      auth: evm.load("N4J_AUTH") as AuthString,
     }),
   );
   add(
     "MDBClient",
     new MDBClient({
-      username: evm.load("MONGO_USERNAME_FILE"),
-      password: evm.load("MONGO_PASSWORD_FILE"),
+      username: evm.load("MONGO_USERNAME"),
+      password: evm.load("MONGO_PASSWORD"),
     }),
   );
   add(
@@ -49,4 +49,4 @@ await makeDependencies(({ add, swap }) => {
 // Initializing sern with pre defined configuration
 Sern.init(config.sern);
 
-await Service("@sern/client").login(evm.load("BOT_TOKEN_FILE"));
+await Service("@sern/client").login(evm.load("BOT_TOKEN"));
