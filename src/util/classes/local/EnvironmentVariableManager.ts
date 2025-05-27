@@ -8,7 +8,7 @@ type EnvironmentVariable = keyof EnvironmentVariables;
  * It ensures that any environment variables loaded are resolved if they are secrets (secrets are only stored as files).
  */
 export class EVM {
-  private vars = new Map<EnvironmentVariable, string>();
+  private vars = new Map<EnvironmentVariable, unknown>();
 
   /**
    * Use `#EVM.new()`.
@@ -28,13 +28,15 @@ export class EVM {
     return evm;
   }
 
-  public load(key: EnvironmentVariable) {
+  public load<K extends EnvironmentVariable, V extends EnvironmentVariables[K]>(
+    key: K,
+  ): V {
     const value = this.vars.get(key);
 
     if (!value) {
       throw new Error(`No entry for key: ${key}.`);
     }
 
-    return value;
+    return value as V;
   }
 }
