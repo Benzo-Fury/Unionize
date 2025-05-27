@@ -22,12 +22,6 @@ export class EVM {
     for (let key in Bun.env) {
       let value = Bun.env[key]!;
 
-      // Checking if key ends with file
-      if (key.endsWith("_FILE")) {
-        key = key.replace("_FILE", "") as EnvironmentVariable;
-        value = await evm.resolveSecret(value);
-      }
-
       evm.vars.set(key as EnvironmentVariable, value.trim()); // Trimming to remove trailing spaces
     }
 
@@ -42,12 +36,5 @@ export class EVM {
     }
 
     return value;
-  }
-
-  private resolveSecret(secretPath: string) {
-    // Resolve the secret
-    const file = Bun.file(secretPath);
-
-    return file.text();
   }
 }
