@@ -35,6 +35,8 @@ await makeDependencies(({ add, swap }) => {
     new MDBClient({
       username: evm.load("MONGO_USERNAME"),
       password: evm.load("MONGO_PASSWORD"),
+      authSource: "Unionize",
+      db: "Unionize"
     }),
   );
   add(

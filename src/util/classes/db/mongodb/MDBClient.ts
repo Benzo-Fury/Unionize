@@ -7,7 +7,8 @@ export interface MDBClientOptions {
   password: string;
   ip: string;
   port: number;
-  dbName: string;
+  db: string;
+  authSource: string;
 }
 
 export class MDBClient implements Disposable, Init {
@@ -18,7 +19,8 @@ export class MDBClient implements Disposable, Init {
     password: "",
     ip: "localhost",
     port: 27017,
-    dbName: "",
+    db: "",
+    authSource: "admin",
   };
 
   constructor(data: Partial<MDBClientOptions> = {}) {
@@ -62,8 +64,8 @@ export class MDBClient implements Disposable, Init {
   }
 
   private createUri(data: MDBClientOptions) {
-    const { username, password, ip, port, dbName } = data;
+    const { username, password, ip, port, db, authSource } = data;
 
-    return `mongodb://${isDevMode() ? "" : `${username}:${password}@`}${ip}:${port}/${dbName}`;
+    return `mongodb://${isDevMode() ? "" : `${username}:${password}@`}${ip}:${port}/${db}?authSource=${authSource}`;
   }
 }
