@@ -22,11 +22,12 @@ jobs:
           script: |
             set -e  # Fail immediately if any command fails
 
+            cd Unionize
+
             echo "🧼 Cleaning local changes..."
             git reset --hard 
 
             echo "🔧 Pulling latest code..."
-            cd Unionize
             git pull
 
             echo "📦 Installing deps..."
