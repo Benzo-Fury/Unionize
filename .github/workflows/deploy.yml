@@ -3,7 +3,7 @@ name: Deploy
 on:
     push:
         branches:
-            - 46/docker-obsolete
+            - main
 
 jobs:
   deploy:
