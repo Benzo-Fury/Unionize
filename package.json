@@ -5,9 +5,14 @@
   "version": "a.1.0.0",
   "description": "",
   "scripts": {
-    "start": "bun ./src/index.ts",
-    "start:dev": "bun --watch ./src/index.ts",
+    "start": "pm2 start --interpreter ~/.bun/bin/bun ./src/index.ts",
+    "dev": "bun --watch ./src/index.ts",
+
+    "build": "echo todo",
+
     "commands:publish": "bun ./scripts/ts/publish.ts",
+
+    "PF-tests": "bun test tests/pre-flight"
   },
   "devDependencies": {
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",

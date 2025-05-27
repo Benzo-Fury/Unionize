@@ -27,7 +27,6 @@ await makeDependencies(({ add, swap }) => {
   add(
     "N4jClient",
     new N4jClient({
-      ip: "neo4j", // Using container name
       auth: evm.load("N4J_AUTH") as AuthString,
     }),
   );
