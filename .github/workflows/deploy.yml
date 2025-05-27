@@ -30,7 +30,7 @@ jobs:
             bun install
 
             echo "🔨 Building bot..."
-            bun build
+            bun run build
 
             echo "🚀 Publishing commands..."
             bun commands:publish
