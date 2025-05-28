@@ -26,6 +26,7 @@ export type Query =
   | "matchRelation"
   | "matchUsers"
   | "matchTree"
+  | "matchAllPartners"
   | "matchAllRelType"
   | "createRelation"
   | "createUser"
@@ -356,12 +357,17 @@ export class N4jDataInterpreter {
       reverse = true;
     }
 
-    const result = await this.getAndRunQuery("matchAllRelType", {
-      gid: guildId,
-      uid: userId,
-      r: rel,
-      rev: reverse,
-    });
+    let result = await (rel === "PARTNER_OF"
+      ? this.getAndRunQuery("matchAllPartners", {
+          gid: guildId,
+          uid: userId,
+        })
+      : this.getAndRunQuery("matchAllRelType", {
+          gid: guildId,
+          uid: userId,
+          r: rel,
+          rev: reverse,
+        }));
 
     if (!result) return null;
 
