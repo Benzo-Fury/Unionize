@@ -1,0 +1,46 @@
+# Deployment script is currently disabled due to this issue: https://github.com/Benzo-Fury/Unionize/issues/49
+
+
+# name: Deploy
+
+# on:
+#     push:
+#         branches:
+#             - 46/docker-obsolete
+
+# jobs:
+#   deploy:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v3
+
+#       - name: SSH & Deploy
+#         uses: appleboy/ssh-action@v1.2.2
+#         with:
+#           host: ${{ secrets.SERVER_HOST }}
+#           username: ${{ secrets.SERVER_USER }}
+#           key: ${{ secrets.SERVER_SSH_KEY }}
+#           script: |
+#             set -e  # Fail immediately if any command fails
+
+#             cd Unionize
+
+#             echo "🧼 Cleaning local changes..."
+#             git reset --hard 
+
+#             echo "🔧 Pulling latest code..."
+#             git pull
+
+#             echo "📦 Installing deps..."
+#             bun install
+
+#             echo "🔨 Building bot..."
+#             bun run build
+
+#             echo "🚀 Publishing commands..."
+#             bun commands:publish
+
+#             echo "🚀 Starting bot with PM2..."
+#             bun start

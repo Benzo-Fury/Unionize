@@ -1,6 +1,7 @@
 import lang from "#lang";
 import { makeDependencies, Sern, Service } from "@sern/handler";
 import { Logger } from "util/classes/local/Logger.ts";
+import { isDevMode } from "util/functions/other/isDevMode.ts";
 import config from "./config.ts";
 import { MDBClient } from "./util/classes/db/mongodb/MDBClient.ts";
 import {
@@ -27,17 +28,10 @@ await makeDependencies(({ add, swap }) => {
   add(
     "N4jClient",
     new N4jClient({
-      ip: "neo4j", // Using container name
       auth: evm.load("N4J_AUTH") as AuthString,
     }),
   );
-  add(
-    "MDBClient",
-    new MDBClient({
-      username: evm.load("MONGO_USERNAME"),
-      password: evm.load("MONGO_PASSWORD"),
-    }),
-  );
+  add("MDBClient", new MDBClient(evm.load("MONGO_URI")));
   add(
     "N4jDataInterpreter",
     (deps) => new N4jDataInterpreter(deps["N4jClient"]),

@@ -43,9 +43,10 @@ export class N4jClient implements Disposable {
     const mergedData = { ...N4jClient.defaultOptions, ...options };
 
     // Creating driver that the entire class will use
+    const credentials = mergedData.auth!.split("/") as [string, string];
     this.driver = createDriver(
       this.createUrl(mergedData.ip, mergedData.port),
-      auth.basic("neo4j", "9SouthernSkies"),
+      auth.basic(...credentials),
     );
   }
 
