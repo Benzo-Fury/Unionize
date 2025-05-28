@@ -34,7 +34,9 @@ export default commandModule({
       return i.reply({
         // Using edit reply as interaction already deferred
         content: Lang.getRes<"text">("components.proposal_manage.no_proposal"),
-        ephemeral: true,
+        flags: [
+          "Ephemeral"
+        ]
       });
     }
 
@@ -43,7 +45,9 @@ export default commandModule({
         content: Lang.getRes<"text">(
           "components.proposal_manage.proposee_only",
         ),
-        ephemeral: true,
+        flags: [
+          "Ephemeral"
+        ]
       });
     }
 
@@ -80,7 +84,9 @@ export default commandModule({
               proposee: `<@${proposal.proposeeId}>`,
             },
           ),
-          ephemeral: true,
+          flags: [
+          "Ephemeral"
+        ]
         });
       }
 
@@ -99,7 +105,9 @@ export default commandModule({
               relation: simplifiedPathArray.join(" "),
             },
           ),
-          ephemeral: true,
+          flags: [
+          "Ephemeral"
+        ]
         });
       }
     }

@@ -19,7 +19,9 @@ export default commandModule({
     if (!proposal) {
       return i.reply({
         content: Lang.getRes<"text">("components.proposal_manage.no_proposal"),
-        ephemeral: true,
+        flags: [
+          "Ephemeral"
+        ]
       });
     }
 
@@ -28,7 +30,9 @@ export default commandModule({
         content: Lang.getRes<"text">(
           "components.proposal_manage.proposee_only",
         ),
-        ephemeral: true,
+        flags: [
+          "Ephemeral"
+        ]
       });
     }
 
@@ -37,7 +41,9 @@ export default commandModule({
         content: Lang.getRes<"text">(
           "components.proposal_manage.already_denied",
         ),
-        ephemeral: true,
+        flags: [
+          "Ephemeral"
+        ]
       });
     }
 

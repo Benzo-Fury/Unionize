@@ -8,7 +8,9 @@ export function guildOnly() {
       await ctx.reply({
         content: langManager.getResponse<"text">("plugins.guild_only.fail")
           .content,
-        ephemeral: true,
+        flags: [
+          "Ephemeral"
+        ]
       });
       return controller.stop();
     }
