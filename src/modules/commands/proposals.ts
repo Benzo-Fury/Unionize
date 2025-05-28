@@ -41,7 +41,7 @@ export default commandModule({
         content: langManager.getResponse<"text">(
           "commands.proposals.errors.none_found",
         ).content,
-        ephemeral: true,
+        flags: ["Ephemeral"],
       });
     }
 

@@ -151,7 +151,9 @@ export default commandModule({
             content: Lang.getRes<"text">(
               "commands.insight.show.errors.insight_nonexistent",
             ),
-            ephemeral: true,
+            flags: [
+              "Ephemeral"
+            ]
           });
         }
 

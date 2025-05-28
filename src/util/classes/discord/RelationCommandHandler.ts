@@ -132,7 +132,9 @@ export class RCH {
         content: Lang.getRes<"text">(
           "commands.relation_based.errors.proposal_self",
         ),
-        ephemeral: true,
+        flags: [
+          "Ephemeral"
+        ]
       });
     }
 
@@ -141,7 +143,9 @@ export class RCH {
         content: Lang.getRes<"text">(
           "commands.relation_based.errors.proposal_bot",
         ),
-        ephemeral: true,
+        flags: [
+          "Ephemeral"
+        ]
       });
     }
 
