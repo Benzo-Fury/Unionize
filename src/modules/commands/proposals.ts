@@ -22,16 +22,18 @@ export default commandModule({
     const paginator = new EmbedPaginator(ctx.interaction, sdt);
 
     // Finding all proposals related to user
-    const proposals = await Proposal.find({
-      $and: [
-        {
-          guildId: ctx.guild!.id,
-        },
-        {
-          $or: [{ proposerId: ctx.user.id }, { proposeeId: ctx.user.id }],
-        },
-      ],
-    });
+    const proposals = (
+      await Proposal.find({
+        $and: [
+          {
+            guildId: ctx.guild!.id,
+          },
+          {
+            $or: [{ proposerId: ctx.user.id }, { proposeeId: ctx.user.id }],
+          },
+        ],
+      })
+    ).reverse();
 
     // Ensuring proposals exist
     if (proposals.length === 0) {
