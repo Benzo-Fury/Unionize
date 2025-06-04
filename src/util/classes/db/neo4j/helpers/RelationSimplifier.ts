@@ -249,9 +249,20 @@ export class RelationSimplifier {
    * Returns the ordinal suffix for a given number.
    */
   private getOrdinalSuffix(num: number): string {
-    if (num % 10 === 1 && num !== 11) return "st";
-    if (num % 10 === 2 && num !== 12) return "nd";
-    if (num % 10 === 3 && num !== 13) return "rd";
-    return "th";
+    // Numbers ending in 11,12 or 13 always use "th"
+    if (num % 100 >= 11 && num % 100 <= 13) {
+      return "th";
+    }
+
+    switch (num % 10) {
+      case 1:
+        return "st";
+      case 2:
+        return "nd";
+      case 3:
+        return "rd";
+      default:
+        return "th";
+    }
   }
 }
