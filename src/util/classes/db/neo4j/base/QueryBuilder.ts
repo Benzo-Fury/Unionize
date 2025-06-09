@@ -277,9 +277,9 @@ export class Query {
    */
   public delete(item: CypherIdentifier) {
     this.appendQuery(
-      [n],
+      [item],
       `
-        DETACH DELETE (${n})
+        ${item.startsWith("r") ? "" : "DETACH"} DELETE (${item})
       `,
     );
   }
