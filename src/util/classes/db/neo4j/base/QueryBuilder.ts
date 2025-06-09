@@ -115,7 +115,7 @@ export class Query {
     this.appendQuery(
       [guildCI],
       `
-        MERGE (${ci}:User { id: ${id} })-[:MEMBER_OF]->(${guildCI})
+        MERGE (${ci}:User { id: "${id}" })-[:MEMBER_OF]->(${guildCI})
         ${timestamp}
       `,
     );
@@ -148,7 +148,7 @@ export class Query {
     this.appendQuery(
       [],
       `
-        MERGE (${ci}:Guild { id: ${id} })
+        MERGE (${ci}:Guild { id: "${id}" })
         ${timestamp}
       `,
     );
@@ -275,7 +275,7 @@ export class Query {
    *
    * @param n - Cypher identifier of the node to delete (user or guild)
    */
-  public delete(n: CypherIdentifier<"u" | "g">) {
+  public delete(item: CypherIdentifier) {
     this.appendQuery(
       [n],
       `
