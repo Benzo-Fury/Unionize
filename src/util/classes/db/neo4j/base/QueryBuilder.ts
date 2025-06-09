@@ -7,7 +7,7 @@ export type CIType = "u" | "g" | "r";
 
 /**
  * A identifier for Neo4j objects in cypher queries.
- * Format: {type}_{number} where type is one of CIType
+ * Format: {type}_{number} where type is one of CIType, or "*" for wildcard matches
  *
  * @example
  * function createNode(id: string) {
@@ -17,7 +17,9 @@ export type CIType = "u" | "g" | "r";
  *   query.manual(`MATCH (${nodeId}:Node { id: id })`)
  * }
  */
-export type CypherIdentifier<T extends CIType = CIType> = `${T}_${number}`;
+export type CypherIdentifier<T extends CIType = CIType> =
+  | `${T}_${number}`
+  | "*";
 
 /**
  * Options for query execution
@@ -99,7 +101,7 @@ export class Query {
    */
   public mergeUser(
     id: string,
-    guildCI: CypherIdentifier,
+    guildCI: CypherIdentifier<"g">,
   ): CypherIdentifier<"u"> {
     if (this.options.validateIds && !this.isValidId(id)) {
       throw new Error(`Invalid user ID: ${id}`);
@@ -177,6 +179,44 @@ export class Query {
       `
         MERGE (${u1})-[${ci}:${r}]->(${u2})
         ${timestamp}
+      `,
+    );
+
+    return ci;
+  }
+
+  /**
+   * Matches an existing relationship between two user nodes.
+   * If "*" is passed as either user identifier, it will create an anonymous node pattern.
+   *
+   * @param u1 - Cypher identifier of the source user node, or "*" for any user
+   * @param r - The type of relationship to match
+   * @param u2 - Cypher identifier of the target user node, or "*" for any user
+   * @param directional - Whether the relationship is directional
+   * @returns The cypher identifier for the matched relationship
+   *
+   * @example
+   * const query = new Query();
+   * // Match any user that is a parent of user456
+   * const user2 = query.matchUser("user456");
+   * const rel = query.matchRel("*", "PARENT_OF", user2);
+   */
+  public matchRel(
+    u1: CypherIdentifier<"u">,
+    r: DBRelation,
+    u2: CypherIdentifier<"u">,
+    directional = true,
+  ): CypherIdentifier<"r"> {
+    const ci = this.createCI("r");
+
+    // Convert wildcards to anonymous patterns
+    const node1 = u1 === "*" ? "(:User)" : `(${u1})`;
+    const node2 = u2 === "*" ? "(:User)" : `(${u2})`;
+
+    this.appendQuery(
+      [u1, u2].filter((id) => id !== "*") as CypherIdentifier[],
+      `
+        MATCH ${node1}-[${ci}:${r}]-${directional ? ">" : ""}${node2}
       `,
     );
 
