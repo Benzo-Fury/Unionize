@@ -1,3 +1,4 @@
+import config from "#config";
 import type { DBRelation, LocalRelation } from "../models/N4jRelation";
 
 /**
@@ -296,6 +297,31 @@ export class Query {
     );
 
     return ci;
+  }
+
+  /**
+   * Matches an entire user's tree.
+   * Defaults to 100 node jumps but can be changed
+   */
+  public matchTree(
+    u: CypherIdentifier<"u">,
+    maxJumps = config.database.maxTreeRecursiveDepth,
+  ) {
+    const uCI = this.createCI("u");
+    const rCI = this.createCI("r");
+
+    this.appendQuery(
+      [u],
+      `
+        CALL apoc.path.subgraphAll(${u}, {
+          relationshipFilter: "PARENT_OF|PARTNER_OF",
+          maxLevel: ${maxJumps},
+          uniqueness: "NODE_GLOBAL"
+        }) YIELD nodes AS ${uCI}, relationships AS ${rCI}
+      `,
+    );
+
+    return { users: uCI, relations: rCI };
   }
 
   /**
