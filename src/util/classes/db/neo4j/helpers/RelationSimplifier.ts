@@ -12,7 +12,7 @@
  * Visit https://www.gnu.org/licenses/agpl-3.0.html for details one the license.
  */
 import type { IntRange } from "ts/types/IntRange";
-import type { LocalRelation } from "../models/N4jRelation";
+import type { N4jPath } from "../models/N4jPath";
 
 /**
  * A base relationship that the validator could return.
@@ -54,21 +54,13 @@ export type WithGreatPrefix<T extends string, R extends number> = R extends 0
 export type Relation = "great" | BaseRelationships | CousinRelationships;
 
 /**
- * A database path returned from the database.
- *
- * @example
- * const dbPath: DatabasePath = ["PARENT_OF", "PARENT_OF", "PARENT_OF"]; // (["parent's" "parent's" "parent"])
- */
-export type DatabasePath = LocalRelation[];
-
-/**
  * A processed version of the raw relationship path.
  * Will be a human readable version.
  *
  * @example
- * const relPath: ProcessedRelationPath = ["great", "grandparent"]; // (parents parents parent)
+ * const relPath: ProcessedPath = ["great", "grandparent"]; // (parents parents parent)
  */
-export type RelationPath = Relation[];
+export type ProcessedPath = Relation[];
 
 /**
  * Represents a operation called in the simplifier.
@@ -79,16 +71,13 @@ export type Operation = (p: string) => string;
  * Takes a database path and simplifys it to be human readable.
  */
 export class RelationSimplifier {
-  constructor(private path: DatabasePath) {}
+  constructor(private path: N4jPath) {}
 
-  public simplify(): RelationPath {
+  public simplify(): ProcessedPath {
     let path = this.path.join(" ");
 
     const allOperations: Operation[] = [
-      ...this.converterOperations,
-      ...Array(5)
-        .fill(this.preOperations)
-        .flatMap((op) => op), // Repeat preOperations 5 times
+      ...this.preOperations,
       ...this.cousinOperations,
       ...this.primaryOperations,
       ...this.shortOperations,
@@ -100,28 +89,8 @@ export class RelationSimplifier {
       path = op(path);
     }
 
-    return path.split(" ") as RelationPath;
+    return path.split(" ") as ProcessedPath;
   }
-
-  /**
-   * Operations to convert database words into more readable ones.
-   *
-   * @example
-   * "PARENT_OF PARENT_OF PARENT_OF" -> "parent's parent's parent"
-   */
-  private converterOperations: Operation[] = [
-    (p) => p.replaceAll("PARENT_OF", "parent"),
-    (p) => p.replaceAll("PARTNER_OF", "partner"),
-    (p) => p.replaceAll("CHILD_OF", "child"),
-    (p) => {
-      // Adding "'s" to required words
-      let splitPath = p.split(" ");
-
-      return splitPath
-        .map((item, i) => (i !== splitPath.length - 1 ? item + "'s" : item))
-        .join(" ");
-    },
-  ];
 
   /**
    * Operations that cut down redundancies.

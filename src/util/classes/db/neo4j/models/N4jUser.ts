@@ -1,16 +1,12 @@
 import { type Context, Service } from "@sern/handler";
-import {
-  type Client,
-  type Collection,
-  type Guild,
-  type GuildMember,
-  type Interaction,
-  User,
-} from "discord.js";
+import { type Client, type Interaction, User } from "discord.js";
 import { n4jUserToDiscordUser } from "util/functions/api/N4jUserToDiscordUser";
-import { N4jDataInterpreter } from "../base/N4jDataInterpreter";
+import type { Executor } from "../base/Executor";
+import type { N4jClient } from "../base/N4jClient";
+import { Query } from "../base/QueryBuilder";
+import { RelationSimplifier } from "../helpers/RelationSimplifier";
 import { N4jGuild } from "./N4jGuild";
-import type { LocalRelation } from "./N4jRelation";
+import type { RelationType } from "./N4jRelation";
 
 /**
  * A user that only has an id and guild id.
@@ -29,14 +25,19 @@ export type AnyN4jUser = N4jSnowflakeUser | N4jUser;
  * Represents a user that exists in the Neo4j database.
  */
 export class N4jUser {
+  public readonly client: N4jClient;
+  public readonly executor: Executor;
   public readonly guild: N4jGuild;
 
   constructor(
     public readonly id: string,
     guild: N4jGuild | string,
-    private dataInterpreter: N4jDataInterpreter,
+    client?: N4jClient,
     public readonly elementId?: string,
+    executor?: Executor,
   ) {
+    this.client = client ?? Service("N4jClient");
+    this.executor = executor ?? Service("Executor");
     // Convert into instance if not already
     this.guild = typeof guild === "string" ? new N4jGuild(guild) : guild;
   }
@@ -45,14 +46,13 @@ export class N4jUser {
    * Creates a N4jUser from a command ctx.
    */
   public static fromCtx(ctx: Context) {
-    const n4j = Service("N4jDataInterpreter");
-
     if (!ctx.guild) {
       throw new Error("Guild is not defined.");
     }
 
-    return new N4jUser(ctx.user.id, ctx.guild.id, n4j);
+    return new N4jUser(ctx.user.id, ctx.guild.id);
   }
+
   /**
    * Creates a N4jUser from any djs interaction.
    * More versatile as it can be used outside sern.
@@ -69,14 +69,13 @@ export class N4jUser {
    * ```
    */
   public static fromInteraction(i: Interaction) {
-    const n4j = Service("N4jDataInterpreter");
-
     if (!i.guild) {
       throw new Error("Guild is not defined.");
     }
 
-    return new N4jUser(i.user.id, i.guild.id, n4j);
+    return new N4jUser(i.user.id, i.guild.id);
   }
+
   /**
    * Creates a N4jUser from a string command options.
    * The options must contain a string option with the specific name.
@@ -87,9 +86,6 @@ export class N4jUser {
     name = "user",
     type: "user" | "id" = "id",
   ) {
-    // Resolving n4j
-    const n4j = Service("N4jDataInterpreter");
-
     // Resolving user
     let u: User | string | null;
     switch (type) {
@@ -109,55 +105,101 @@ export class N4jUser {
       throw new Error("Guild is not defined.");
     }
 
-    return new N4jUser(u instanceof User ? u.id : u, ctx.guild.id, n4j);
+    return new N4jUser(u instanceof User ? u.id : u, ctx.guild.id);
   }
+
+  // --------- Creation Methods --------- //
 
   public async marry(partner: N4jUser | string) {
     await this.newRelation("PARTNER_OF", partner);
   }
 
   public async addParent(parent: N4jUser | string) {
-    return this.newRelation("PARENT_OF", parent);
+    parent =
+      parent instanceof N4jUser
+        ? parent
+        : new N4jUser(parent, this.guild, this.client);
+    return this.newRelation.call(parent, "PARENT_OF", this);
   }
 
   public async adopt(child: N4jUser | string) {
-    return this.newRelation("CHILD_OF", child);
+    return this.newRelation("PARENT_OF", child);
   }
 
+  // --------- Deletion Methods --------- //
+
+  /**
+   * Removes the users partner(s).
+   */
   public async divorce(partner: N4jUser | string) {
     // Require "partner" parameter as multiple partners can exist
     return this.remRelation("PARTNER_OF", partner);
   }
 
   /**
-   * Emancipates your parent. If you have multiple parents, both will be removed.
+   * Removes the users parent(s).
    */
   public async emancipate() {
-    return this.dataInterpreter.deleteAll(this.id, this.guild.id, "PARENT_OF");
+    return this.remRelation("PARENT_OF", "*", true);
   }
 
   public async disown(child: N4jUser | string) {
-    return this.remRelation("CHILD_OF", child);
+    return this.remRelation("PARENT_OF", child);
   }
 
-  public async pathTo(user: N4jUser | string) {
-    user = this.userParameter(user);
-
-    return this.dataInterpreter.generateRelationPath(
-      this.id,
-      user,
-      this.guild.id,
-    );
-  }
+  // ---------- Getter Methods ---------- //
 
   public async children() {
-    return this.getAll("CHILD_OF");
+    return this.getRelatedUsers("PARENT_OF", true);
   }
   public async parents() {
-    return this.getAll("PARENT_OF");
+    return this.getRelatedUsers("PARENT_OF");
   }
   public async partners() {
-    return this.getAll("PARTNER_OF");
+    return this.getRelatedUsers("PARTNER_OF");
+  }
+
+  // --------------- Other -------------- //
+
+  /**
+   * High level method to calculate the relationship between 2 users in a human readable format.
+   *
+   * Uses lower level functions to get the shortest path from db and simplify it and then use relationship simplifier
+   */
+  public async pathTo(u: N4jUser | string) {
+    u = this.userParameter(u);
+
+    // Create query to calculate path
+    const query = new Query();
+    const g = query.mergeGuild(this.guild.id);
+    const u1 = query.mergeUser(this.id, g);
+    const u2 = query.mergeUser(u, g);
+
+    const p = query.matchPath(u1, u2);
+    query.return([p]);
+
+    const response = await this.executor.run(query);
+    const path = response.get(p);
+
+    if (!path) {
+      return null; // No path exists
+    }
+
+    return path;
+  }
+
+  public async relationWith(u: N4jUser | string) {
+    u = this.userParameter(u);
+
+    const path = await this.pathTo(u);
+
+    if (!path) {
+      return null; // no relation;
+    }
+
+    const simplified = new RelationSimplifier(path).simplify();
+
+    return simplified.join(" ");
   }
 
   public toDiscordUser(client: Client) {
@@ -170,38 +212,61 @@ export class N4jUser {
 
   // --------------- Helpers --------------- //
 
-  private async getAll(rel: LocalRelation) {
-    const users =
-      (await this.dataInterpreter.getAll(this.id, this.guild.id, rel)) || [];
+  /**
+   * Gets all users that have a specific relationship with this user.
+   * @param rel The type of relationship to look for
+   * @param reverse If true, looks for users that this user has the relationship with instead of users that have the relationship with this user
+   * @returns Array of related users
+   */
+  private async getRelatedUsers(rel: RelationType, reverse = false) {
+    const query = new Query();
+    const g = query.mergeGuild(this.guild.id);
+    const u1 = query.mergeUser(this.id, g);
 
-    return new N4jUserMap(users);
+    const u2 = query.matchUserWhereRel(g, rel, u1, reverse);
+
+    query.return([u2]);
+
+    return this.executor.run(query);
   }
 
-  private newRelation(relation: LocalRelation, user: N4jUser | string) {
+  private newRelation(rel: RelationType, user: N4jUser | string) {
     user = this.userParameter(user);
 
-    return this.dataInterpreter.createRelation(
-      {
-        user1Id: this.id,
-        relation: relation,
-        user2Id: user,
-        properties: {},
-      },
-      this.guild.id,
-    );
+    const query = new Query();
+
+    const guild = query.mergeGuild(this.guild.id);
+    const u1 = query.mergeUser(this.id, guild);
+    const u2 = query.mergeUser(user, guild);
+
+    query.createRel(u1, rel, u2);
+
+    return this.executor.run(query);
   }
 
-  private remRelation(relation: LocalRelation, user: N4jUser | string) {
+  private remRelation(
+    rel: RelationType,
+    user: N4jUser | string,
+    reverse = false,
+    directional = true,
+  ) {
     user = this.userParameter(user);
 
-    return this.dataInterpreter.deleteRelation(
-      {
-        relation: relation,
-        user1Id: this.id,
-        user2Id: user,
-      },
-      this.guild.id,
+    const query = new Query();
+
+    const guild = query.mergeGuild(this.guild.id);
+    const u1 = query.mergeUser(this.id, guild);
+    const u2 = query.mergeUser(user, guild);
+
+    const r = query.matchRel(
+      reverse ? u2 : u1,
+      rel,
+      reverse ? u1 : u2,
+      directional,
     );
+    query.delete(r);
+
+    return this.executor.run(query);
   }
 
   /**
@@ -210,63 +275,5 @@ export class N4jUser {
   private userParameter(u: N4jUser | string) {
     if (u instanceof N4jUser) return u.id;
     else return u;
-  }
-}
-
-/**
- * The N4jUserMap exists to be a container that holds multiple users.
- * It has methods for mass converting users.
- *
- * ## Rules
- * This is a N4j model and is therefor allowed to call queries via the data interpreter.
- *
- * @example
- * const users = n4jUser.children();
- *
- * const map = new N4jUserMap(users);
- *
- * const members = map.toMembers();
- */
-export class N4jUserMap extends Map<string, N4jUser> {
-  constructor(users?: N4jUser[]) {
-    super(users?.map((u) => [u.id, u]));
-  }
-
-  /**
-   * Converts all existing users into discord.js members via the api.
-   *
-   * @param guild The guild to fetch the members on.
-   */
-  public async toMembers(guild: Guild) {
-    const users = Array.from(this).map((i) => i[0]); // Maps into an array of user ids
-
-    const members = await guild.members.fetch({
-      user: users,
-    });
-
-    await this.prune(members);
-
-    return members;
-  }
-
-  /**
-   * Takes a collection of members that were returned from the djs api...
-   * any users that dont exist according to the api are removed from Neo4j.
-   * This is to keep the db clean, removing users that no longer exist in discord.
-   * Essentially our own form of garbage collection.
-   *
-   * Instead, perhaps we should create some sort of N4j garbage collection class that handles this.
-   * It can be called anywhere (including by a command executed by an admin)
-   * @param members
-   */
-  public async prune(members: Collection<string, GuildMember>) {
-    const missing: N4jUser[] = [];
-    for (const u of this.values()) {
-      if (!members.has(u.id)) {
-        missing.push(u);
-      }
-    }
-
-    // Prune from db
   }
 }
