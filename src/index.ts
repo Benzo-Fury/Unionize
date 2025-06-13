@@ -1,5 +1,6 @@
 import lang from "#lang";
 import { makeDependencies, Sern, Service } from "@sern/handler";
+import { Executor } from "util/classes/db/neo4j/base/Executor.ts";
 import { Logger } from "util/classes/local/Logger.ts";
 import { isDevMode } from "util/functions/other/isDevMode.ts";
 import config from "./config.ts";
@@ -8,7 +9,6 @@ import {
   type AuthString,
   N4jClient,
 } from "./util/classes/db/neo4j/base/N4jClient.ts";
-import { N4jDataInterpreter } from "./util/classes/db/neo4j/base/N4jDataInterpreter.ts";
 import { Bot } from "./util/classes/discord/Bot.ts";
 import { EVM } from "./util/classes/local/EnvironmentVariableManager.ts";
 import { InsightCache } from "./util/classes/local/InsightCache.ts";
@@ -32,10 +32,7 @@ await makeDependencies(({ add, swap }) => {
     }),
   );
   add("MDBClient", new MDBClient(evm.load("MONGO_URI")));
-  add(
-    "N4jDataInterpreter",
-    (deps) => new N4jDataInterpreter(deps["N4jClient"]),
-  );
+  add("Executor", (deps) => new Executor(deps["N4jClient"]));
   add("langManager", (deps) => new LangManager(lang, deps["@sern/client"]));
   add("insightCache", new InsightCache());
 });

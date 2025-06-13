@@ -1,9 +1,9 @@
-import type { DBRelation } from "../models/N4jRelation";
+import type { DBRelation, LocalRelation } from "../models/N4jRelation";
 
 /**
  * The type of a cypher identifier used in Neo4j queries.
  */
-export type CIType = "u" | "g" | "r";
+export type CIType = "u" | "g" | "r" | "p";
 
 /**
  * A identifier for Neo4j objects in cypher queries.
@@ -65,9 +65,21 @@ export class Query {
   private _counter = 0;
 
   /**
+   * Array of cypher identifiers that should be carried forward in every WITH statement
+   * regardless of whether they are explicitly specified.
+   */
+  private persistentVariables: CypherIdentifier[] = [];
+
+  /**
    * Query execution options
    */
   private options: Required<QueryOptions>;
+
+  /**
+   * Maps user cypher identifiers to their associated guild cypher identifiers
+   */
+  private userGuildMap: Map<CypherIdentifier<"u">, CypherIdentifier<"g">> =
+    new Map();
 
   constructor(options: QueryOptions = {}) {
     this.options = {
@@ -83,6 +95,17 @@ export class Query {
   get counter() {
     this._counter++;
     return this._counter;
+  }
+
+  /**
+   * Adds a cypher identifier to the list of variables that should be carried forward
+   * in every WITH statement.
+   * @param ci - The cypher identifier to persist
+   */
+  public addPersistentVariable(ci: CypherIdentifier) {
+    if (!this.persistentVariables.includes(ci)) {
+      this.persistentVariables.push(ci);
+    }
   }
 
   /**
@@ -120,6 +143,9 @@ export class Query {
       `,
     );
 
+    this.addPersistentVariable(ci);
+    this.userGuildMap.set(ci, guildCI);
+
     return ci;
   }
 
@@ -152,6 +178,8 @@ export class Query {
         ${timestamp}
       `,
     );
+
+    this.addPersistentVariable(ci);
 
     return ci;
   }
@@ -217,6 +245,53 @@ export class Query {
       [u1, u2].filter((id) => id !== "*") as CypherIdentifier[],
       `
         MATCH ${node1}-[${ci}:${r}]-${directional ? ">" : ""}${node2}
+      `,
+    );
+
+    return ci;
+  }
+
+  /**
+   * Merges a user node that has a specific relationship with another node and is a member of a guild.
+   * @param u1Id - The ID of the user to merge
+   * @param guildCI - The cypher identifier of the guild node
+   * @param r - The type of relationship the user should have
+   * @param u2CI - The cypher identifier of the target node
+   * @returns The cypher identifier for the merged user node
+   */
+  public matchUserWhereRel(
+    guildCI: CypherIdentifier<"g">,
+    r: DBRelation,
+    u2CI: CypherIdentifier<"u">,
+    reverse = false,
+  ): CypherIdentifier<"u"> {
+    const ci = this.createCI("u");
+
+    this.appendQuery(
+      [guildCI, u2CI],
+      `
+        MATCH (${ci})
+        WHERE (${ci})-[:MEMBER_OF]->(${guildCI})
+          AND (${reverse ? u2CI : ci})-[:${r}]->(${reverse ? ci : u2CI})
+      `,
+    );
+
+    return ci;
+  }
+
+  /**
+   * Gets the shortest path between two users through PARENT_OF and PARTNER_OF relationships.
+   * Function currently contains its own return statement in cypher and will be a {@link LocalRelation}.
+   * @param u1 - Starting user cypher identifier
+   * @param u2 - Ending user cypher identifier
+   */
+  public matchPath(u1: CypherIdentifier<"u">, u2: CypherIdentifier<"u">) {
+    const ci = this.createCI("p");
+
+    this.appendQuery(
+      [u1, u2],
+      `
+        MATCH ${ci} = shortestPath((${u1})-[:PARENT_OF|PARTNER_OF*]-(${u2}))
       `,
     );
 
@@ -296,6 +371,8 @@ export class Query {
 
   /**
    * Returns specified properties from matched nodes/relationships.
+   * If any of the return expressions reference a user node that was merged with a guild,
+   * the guild will be automatically included in the return statement if not already present.
    *
    * @param returns - Array of return expressions
    * @example
@@ -304,13 +381,35 @@ export class Query {
    * query.return([
    *   `${user}.name`,
    *   `${user}.age`
-   * ]);
+   * ]); // Will also return the associated guild if not already included
    */
   public return(returns: string[]) {
+    // Find all user cypher identifiers in the return expressions
+    const userCIs = returns
+      .filter((r) => r.startsWith("u_"))
+      .map((r) => r.split(".")[0] as CypherIdentifier<"u">);
+
+    // Find all guild identifiers already in the return expressions
+    const existingGuildCIs = new Set(
+      returns.filter((r) => r.startsWith("g_")).map((r) => r.split(".")[0]),
+    );
+
+    // Add guild information for each user that has an associated guild,
+    // but only if that guild isn't already being returned
+    const guildReturns = userCIs
+      .filter((ci) => this.userGuildMap.has(ci))
+      .map((ci) => this.userGuildMap.get(ci)!)
+      .filter((guild, index, self) => self.indexOf(guild) === index) // Deduplicate guilds
+      .filter((guild) => !existingGuildCIs.has(guild)) // Filter out guilds already in returns
+      .map((guild) => `${guild}`);
+
+    const allReturns = [...returns, ...guildReturns];
+
     this.appendQuery(
-      [],
+      // Starts with "*_" (Is cypher identifier)
+      allReturns.filter((r) => /^[^_]_/.test(r)) as CypherIdentifier[],
       `
-        RETURN ${returns.join(", ")}
+        RETURN ${allReturns.join(", ")}
       `,
     );
   }
@@ -330,6 +429,8 @@ export class Query {
   public clear() {
     this.execution = "";
     this._counter = 0;
+    this.persistentVariables = [];
+    this.userGuildMap.clear();
   }
 
   // Helper Methods
@@ -340,13 +441,29 @@ export class Query {
    * @param query - The query string to append
    */
   private appendQuery(carryVariables: CypherIdentifier[], query: string) {
+    // Combine explicitly carried variables with persistent variables
+    const allVariables = [
+      ...new Set([...carryVariables, ...this.persistentVariables]),
+    ];
+
     // Add WITH clause if we have variables to carry forward
-    if (carryVariables.length > 0) {
-      this.execution += `\nWITH ${carryVariables.join(", ")}\n`;
+    if (allVariables.length > 0) {
+      this.execution += `\nWITH ${allVariables.join(", ")}\n`;
     }
 
     // Add the query with consistent formatting
     this.execution += query.trim() + "\n";
+  }
+
+  /**
+   * Creates a unique cypher identifier for a node or relationship.
+   * This is a public version of createCI that can be used by external classes.
+   *
+   * @param type - The type of identifier to create (u: user, g: guild, r: relationship)
+   * @returns A unique cypher identifier
+   */
+  public createIdentifier<T extends CIType>(type: T): CypherIdentifier<T> {
+    return this.createCI(type);
   }
 
   /**
