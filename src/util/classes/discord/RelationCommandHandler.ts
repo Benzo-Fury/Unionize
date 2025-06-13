@@ -12,7 +12,7 @@ import { createPropButton } from "util/templates/buttons/proposalManagement";
 import { RelationSimplifier } from "../db/neo4j/helpers/RelationSimplifier";
 import { RelationValidator } from "../db/neo4j/helpers/RelationValidator";
 import type { LocalRelation } from "../db/neo4j/models/N4jRelation";
-import { N4jUser, N4jUserMap } from "../db/neo4j/models/N4jUser";
+import { N4jUser } from "../db/neo4j/models/N4jUser";
 
 export type RelationCreateCommandName = "marry" | "adopt" | "parentify";
 export type RelationDeleteCommandName = "divorce" | "disown" | "emancipate";
@@ -69,7 +69,7 @@ export class RCH {
     const user = N4jUser.fromInteraction(i);
 
     // Getting all user from the database.
-    let users: N4jUserMap; // ----------> Something seems to be super slow at responding (probably neo4j but investigate)
+    let users: N4jUser[] = [];
     switch (moduleName as RelationCommandName) {
       case "disown":
       case "adopt":
@@ -86,12 +86,14 @@ export class RCH {
     }
 
     // Checking if any were returned
-    if (users.size === 0) {
+    if (users.length === 0) {
       return i.respond([]);
     }
 
-    // Resolving children as guild members
-    const members = await users.toMembers(i.guild);
+    // Map children as guild members via api
+    const members = await i.guild.members.fetch({
+      user: users.map((u) => u.id),
+    });
 
     return i.respond(
       // Mapping the members to response objects
@@ -132,9 +134,7 @@ export class RCH {
         content: Lang.getRes<"text">(
           "commands.relation_based.errors.proposal_self",
         ),
-        flags: [
-          "Ephemeral"
-        ]
+        flags: ["Ephemeral"],
       });
     }
 
@@ -143,9 +143,7 @@ export class RCH {
         content: Lang.getRes<"text">(
           "commands.relation_based.errors.proposal_bot",
         ),
-        flags: [
-          "Ephemeral"
-        ]
+        flags: ["Ephemeral"],
       });
     }
 
@@ -278,25 +276,25 @@ export class RCH {
 
     const relation = RCH.commandNameToRelation(commandName);
     const primaryUser = N4jUser.fromCtx(ctx);
-    let secondaryUsers = new N4jUserMap();
+    const secondaryUsers: N4jUser[] = [];
 
     switch (relation) {
       case "PARENT_OF": {
         const u = N4jUser.fromOptions(ctx, "child");
-        secondaryUsers.set(u.id, u);
+        secondaryUsers.push(u);
         await primaryUser.disown(u);
         break;
       }
       case "PARTNER_OF": {
         const u = N4jUser.fromOptions(ctx, "partner");
-        secondaryUsers.set(u.id, u);
+        secondaryUsers.push(u);
         await primaryUser.divorce(u);
         break;
       }
       case "CHILD_OF":
         const uS = await primaryUser.parents();
         for (const u of uS.values()) {
-          secondaryUsers.set(u.id, u);
+          secondaryUsers.push(u);
         }
         await primaryUser.emancipate();
         break;
@@ -305,7 +303,7 @@ export class RCH {
     // Respond to interaction
     await ctx.reply(
       Lang.getRes<"text">(
-        secondaryUsers.size === 1
+        secondaryUsers.length === 1
           ? "commands.relation_based.success.delete"
           : "commands.relation_based.success.delete_plural",
         {
@@ -319,7 +317,9 @@ export class RCH {
 
     // Converting to guild members and accessing their "User" via that.
     // This allows us to get all the member users at once rather the user iteself one at a time from the api
-    const secondaryMembers = await secondaryUsers.toMembers(ctx.guild);
+    const secondaryMembers = await ctx.guild.members.fetch({
+      user: secondaryUsers.map((u) => u.id),
+    });
 
     for (const member of secondaryMembers.values()) {
       await member.user.send(
