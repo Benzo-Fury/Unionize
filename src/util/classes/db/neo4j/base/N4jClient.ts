@@ -6,6 +6,7 @@ import {
   ManagedTransaction,
   Session,
 } from "neo4j-driver";
+import { Query } from "./QueryBuilder";
 
 export type AuthString = `${string}/${string}`;
 
@@ -16,11 +17,18 @@ export interface N4jClientOptions {
 }
 
 /**
- * Class to interact with a Neo4j Database.
- * This class is responsible for executing queries and managing session lifecycles,
- * including a mechanism to reuse sessions and close them after a period of inactivity.
- * Class is never exposed to any higher level class instances like Neo4jFamilyMembers. This class only ever handles raw database data -
- * and is the bridge between the code and the database.
+ * A low-level client for interacting with a Neo4j database.
+ * 
+ * This class provides core functionality to:
+ * - Execute raw Cypher queries against the database
+ * - Manage database session lifecycles
+ * - Handle connection pooling and session reuse
+ * - Automatically close inactive sessions
+ * 
+ * @remarks
+ * This is a base-level implementation that operates directly with the Neo4j driver.
+ * It intentionally remains unaware of any higher-level abstractions or models built on top of it.
+ * For model-aware database operations, use the specialized interpreter classes instead.
  */
 export class N4jClient implements Disposable {
   private static readonly defaultOptions: N4jClientOptions = {
@@ -53,7 +61,7 @@ export class N4jClient implements Disposable {
   public async test() {
     try {
       // Run a simple Cypher query to verify the connection
-      const result = await this.runQuery(
+      const result = await this.run(
         "RETURN 'Connection successful' AS message",
       );
 
@@ -99,7 +107,9 @@ export class N4jClient implements Disposable {
   /**
    * Executes a Cypher query against the Neo4j database using the current session.
    */
-  public async runQuery(query: string, parameters: Record<string, any> = {}) {
+  public async run(query: string | Query, parameters: Record<string, any> = {}) {
+    query = query.toString?.() ?? query;
+
     this.ensureSession();
 
     let res;
