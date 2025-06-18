@@ -8,7 +8,6 @@ import {
   Relationship,
   ResultSummary,
 } from "neo4j-driver";
-import type { Infer } from "ts/types/Infer";
 import { N4jGuild } from "../models/N4jGuild";
 import { N4jPath } from "../models/N4jPath";
 import { N4jRelation } from "../models/N4jRelation";
@@ -52,7 +51,9 @@ export type Model<T extends CIType = CIType> = ModelMap[T];
  * Contains modelled n4j records.
  */
 export class Execution {
-  public records = new Map<CypherIdentifier, Model>();
+  public records: Array<
+    Partial<Record<CypherIdentifier | CIType, ModelMap[CIType]>>
+  > = [];
   public unknownRecords = new Map<string, unknown>();
   public readonly summary: ResultSummary<Integer>;
 
@@ -61,32 +62,32 @@ export class Execution {
   }
 
   /**
-   * Get a specific model by its type, with type safety
+   * Get all models of a specific type across all records, with type safety
    */
-  public get<T extends CIType>(
-    k: CypherIdentifier<T>,
-  ): ModelMap[T] | undefined {
-    return this.records.get(k) as ModelMap[T] | undefined;
+  public get<T extends CIType>(k: CypherIdentifier<T> | T): ModelMap[T][] {
+    return this.records
+      .map((record) => record[k])
+      .filter((model): model is ModelMap[T] => model !== undefined);
   }
 
   /**
-   * Get a specific model by its type, throwing if not found
+   * Get the first model of a specific type, throwing if none found
    */
-  public getOrThrow<T extends CIType>(k: CypherIdentifier<T>): ModelMap[T] {
-    const model = this.get(k);
-    if (!model) {
+  public getFirst<T extends CIType>(k: CypherIdentifier<T>): ModelMap[T] {
+    const models = this.get(k);
+    if (models.length === 0) {
       throw new ExecutorError(
         `Required model of type ${k} not found in execution results`,
       );
     }
-    return model;
+    return models[0];
   }
 
   /**
    * Check if execution has a specific model type
    */
   public has(k: CypherIdentifier): boolean {
-    return this.records.has(k);
+    return this.records.some((record) => record[k] !== undefined);
   }
 }
 
@@ -130,6 +131,10 @@ export class Executor {
 
       // Loop raw records
       for (const rec of raw.records) {
+        const record: Partial<
+          Record<CypherIdentifier | CIType, ModelMap[CIType]>
+        > = {};
+
         // Loop each key on the record and convert to model
         for (let key of rec.keys) {
           if (typeof key !== "string") {
@@ -139,11 +144,17 @@ export class Executor {
           const value: Value = rec.get(key);
 
           if (this.isCIType(key)) {
-            execution.records.set(key, this.fieldToModel(key, value, rec));
+            record[key] = this.fieldToModel(key, value, rec);
           } else {
             execution.unknownRecords.set(key.toString(), value);
           }
         }
+
+        execution.records.push(
+          record as Partial<
+            Record<CypherIdentifier | CIType, ModelMap[CIType]>
+          >,
+        );
       }
 
       return execution;
@@ -163,11 +174,7 @@ export class Executor {
     parameters?: Record<string, Model | any>,
   ): Promise<ModelMap[T]> {
     const execution = await this.run(query, parameters);
-    const model = execution.get(key);
-
-    if (!model) {
-      throw new ExecutorError(`No "${key}" model found in query results`);
-    }
+    const model = execution.getFirst(key);
 
     return model;
   }
@@ -257,6 +264,6 @@ export class Executor {
    */
   private isCIType(key: string): key is CypherIdentifier {
     const CI_KEYS: CIType[] = ["u", "g", "r", "p"];
-    return CI_KEYS.some((k) => key.startsWith(k)); 
+    return CI_KEYS.some((k) => key.startsWith(k));
   }
 }
