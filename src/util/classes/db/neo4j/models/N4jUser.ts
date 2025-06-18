@@ -159,6 +159,16 @@ export class N4jUser {
     return this.getRelatedUsers("PARTNER_OF");
   }
 
+  public async tree(maxDepth?: number) {
+    const query = new Query();
+    const g = query.mergeGuild(this.guild.id);
+    const u = query.mergeUser(this.id, g);
+    const t = query.matchTree(u, maxDepth);
+    query.return([`${t.users} AS u`, `${t.relations} AS r`]);
+
+    return this.executor.run(query);
+  }
+
   // --------------- Other -------------- //
 
   /**
@@ -181,11 +191,11 @@ export class N4jUser {
     const response = await this.executor.run(query);
     const path = response.get(p);
 
-    if (!path) {
+    if (!path || path.length === 0) {
       return null; // No path exists
     }
 
-    return path;
+    return path[0];
   }
 
   public async relationWith(u: N4jUser | string) {
@@ -227,7 +237,9 @@ export class N4jUser {
 
     query.return([u2]);
 
-    return this.executor.run(query);
+    const exe = await this.executor.run(query);
+
+    return exe.get("u");
   }
 
   private newRelation(rel: RelationType, user: N4jUser | string) {
