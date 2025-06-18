@@ -14,8 +14,6 @@
   "devDependencies": {
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",
     "@types/bun": "latest",
-    "@types/d3": "^7.4.3",
-    "@types/graphviz": "^0.0.39",
     "prettier": "^3.3.3"
   },
   "peerDependencies": {
