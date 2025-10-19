@@ -7,7 +7,6 @@ import type { CoreDependencies } from "@sern/handler";
 import type { Publisher } from "@sern/publisher";
 import type { Executor } from "util/classes/db/neo4j/base/Executor";
 import type { Bot } from "util/classes/discord/Bot";
-import type { EVM } from "util/classes/local/EnvironmentVariableManager";
 import type { LangManager } from "util/classes/local/LangManager";
 import type { Logger } from "util/classes/local/Logger";
 import type { MDBClient } from "../../util/classes/db/mongodb/MDBClient";
@@ -23,7 +22,6 @@ declare global {
   interface Dependencies extends CoreDependencies {
     "@sern/client": Bot;
     "@sern/logger": Logger;
-    EVM: EVM;
     publisher: Publisher;
     N4jClient: N4jClient;
     Executor: Executor;
