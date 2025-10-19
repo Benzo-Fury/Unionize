@@ -20,10 +20,10 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "@napi-rs/canvas": "^0.1.60",
+    "@napi-rs/canvas": "^0.1.73",
     "@sern/handler": "^4.2.4",
     "@sern/publisher": "^1.1.2",
-    "discord.js": "^14.18.0",
+    "discord.js": "^14.21.0",
     "mongoose": "^8.7.3",
     "neo4j-driver": "^5.26.0"
   },

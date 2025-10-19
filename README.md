@@ -195,3 +195,13 @@ Use this table to understand what IL correlates to what relationships. Keep in m
 ## Other
 
 - Remove the language manager from global namespace.
+- **Debug & Utility Commands** (`/debug`)
+  - **Server Validation**: `/debug validate` checks for:
+    - Circular relationships
+    - Broken/orphaned connections
+    - Invalid relationship types
+    - Missing guild members
+  - **Performance**: `/debug performance` shows:
+    - Query execution times
+    - Cache hit rates
+    - API latency

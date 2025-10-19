@@ -431,9 +431,14 @@ export class Query {
 
     const allReturns = [...returns, ...guildReturns];
 
+    // Extract cypher identifiers from return expressions for the WITH clause
+    const carryVariables = returns
+      .map((r) => r.split(" AS ")[0].trim()) // Get the part before "AS"
+      .filter((r) => /^[ugr]_/.test(r)) // Only include valid cypher identifiers
+      .map((r) => r as CypherIdentifier);
+
     this.appendQuery(
-      // Starts with "*_" (Is cypher identifier)
-      allReturns.filter((r) => /^[^_]_/.test(r)) as CypherIdentifier[],
+      carryVariables,
       `
         RETURN ${allReturns.join(", ")}
       `,

@@ -3,5 +3,6 @@
 /secrets
 /.sern
 /.vscode
+/.cursor
 .env
 bun.lockb

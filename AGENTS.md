@@ -2,6 +2,9 @@
 
 This repository follows a few guidelines for contributions and the operation of the AI agents editing it.
 
+## Pre-Generation Knowledge
+Unionize uses some unconventional command names and features so before commencing any generation please review existing scripts in package.json.
+
 ## Conventional Commits
 
 - **All commits must follow the [Conventional Commits](https://www.conventionalcommits.org) specification.**
@@ -33,7 +36,7 @@ This repository follows a few guidelines for contributions and the operation of 
 ```
 
 - This banner helps identify which files were created by AI assistants.
-- The banner should be added immediately after any file-level imports.
+- The banner should be added at the top of the file before any file-level imports.
 
 ## Scope
 

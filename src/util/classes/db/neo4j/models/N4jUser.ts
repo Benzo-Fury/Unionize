@@ -164,6 +164,10 @@ export class N4jUser {
     const g = query.mergeGuild(this.guild.id);
     const u = query.mergeUser(this.id, g);
     const t = query.matchTree(u, maxDepth);
+
+    // todo: the return method could take cypher ids raw 
+    // and convert them to be returned as their type rather than us saying 
+    // guild AS g
     query.return([`${t.users} AS u`, `${t.relations} AS r`]);
 
     return this.executor.run(query);

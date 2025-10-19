@@ -52,7 +52,9 @@ export type Model<T extends CIType = CIType> = ModelMap[T];
  */
 export class Execution {
   public records: Array<
-    Partial<Record<CypherIdentifier | CIType, ModelMap[CIType]>>
+    Partial<
+      Record<CypherIdentifier | CIType, ModelMap[CIType] | ModelMap[CIType][]>
+    >
   > = [];
   public unknownRecords = new Map<string, unknown>();
   public readonly summary: ResultSummary<Integer>;
@@ -63,11 +65,23 @@ export class Execution {
 
   /**
    * Get all models of a specific type across all records, with type safety
+   * Handles both single models and arrays of models
    */
   public get<T extends CIType>(k: CypherIdentifier<T> | T): ModelMap[T][] {
-    return this.records
-      .map((record) => record[k])
-      .filter((model): model is ModelMap[T] => model !== undefined);
+    const results: ModelMap[T][] = [];
+
+    for (const record of this.records) {
+      const value = record[k];
+      if (value !== undefined) {
+        if (Array.isArray(value)) {
+          results.push(...(value as ModelMap[T][]));
+        } else {
+          results.push(value as ModelMap[T]);
+        }
+      }
+    }
+
+    return results;
   }
 
   /**
@@ -132,7 +146,10 @@ export class Executor {
       // Loop raw records
       for (const rec of raw.records) {
         const record: Partial<
-          Record<CypherIdentifier | CIType, ModelMap[CIType]>
+          Record<
+            CypherIdentifier | CIType,
+            ModelMap[CIType] | ModelMap[CIType][]
+          >
         > = {};
 
         // Loop each key on the record and convert to model
@@ -152,7 +169,10 @@ export class Executor {
 
         execution.records.push(
           record as Partial<
-            Record<CypherIdentifier | CIType, ModelMap[CIType]>
+            Record<
+              CypherIdentifier | CIType,
+              ModelMap[CIType] | ModelMap[CIType][]
+            >
           >,
         );
       }
@@ -180,7 +200,7 @@ export class Executor {
   }
 
   /**
-   * Converts a field value to its corresponding model
+   * Converts a field value to its corresponding model or array of models
    */
   private fieldToModel<T extends CIType>(
     key: CypherIdentifier<T>,
@@ -190,73 +210,129 @@ export class Executor {
       PropertyKey,
       RecordShape<PropertyKey, number>
     >,
-  ): Model<T> {
+  ): Model<T> | Model<T>[] {
     /**
-     * Assert that value is value type.
+     * Check if value is an array and handle it appropriately
      */
-    function assert<T extends Value>(
-      val: Value,
-      t: new (...args: any[]) => T,
-    ): asserts val is T {
-      if (!(val instanceof t)) {
-        /**
-         * Cypher code likely returned something that wasn't expected for that key.
-         */
-        throw new ExecutorError(
-          `Incorrect field type: expected ${t.name} but got ${val.constructor.name}`,
-        );
-      }
+    function isArray(value: any): value is any[] {
+      return Array.isArray(value);
     }
 
     const type = key[0] as CIType;
     try {
-      switch (type) {
-        case "u": {
-          assert(val, Node);
-
-          // Check for guild
-          let g = record.get("g");
-
-          return new N4jUser(
-            val.properties.id,
-            g?.properties?.id ?? undefined,
-            undefined,
-            val.elementId,
-          ) as Model<T>;
-        }
-        case "g": {
-          assert(val, Node);
-
-          return new N4jGuild(
-            val.properties.id,
-            val.properties.createdOn,
-          ) as Model<T>;
-        }
-        case "p": {
-          assert(val, Path);
-
-          return N4jPath.fromRaw(val) as Model<T>;
-        }
-        case "r": {
-          assert(val, Relationship);
-
-          if (!N4jRelation.isValidRel(val.type)) {
-            throw new Error(`Invalid relation type: ${val.type}`);
+      // Handle arrays of models
+      if (isArray(val)) {
+        return val.map((item) => {
+          // Type check each item before processing
+          if (!this.isValidValue(item)) {
+            throw new ExecutorError(
+              `Invalid array item type: expected Node, Relationship, or Path but got ${item?.constructor?.name || typeof item}`,
+            );
           }
-
-          return new N4jRelation(
-            val.type as any,
-            val.startNodeElementId,
-            val.endNodeElementId,
-          ) as Model<T>;
-        }
-        default: {
-          throw new Error("Unknown field key.");
-        }
+          return this.convertSingleValue(type, item, record);
+        }) as Model<T>[];
       }
+
+      // Handle single values
+      if (!this.isValidValue(val)) {
+        const actualType = typeof val;
+        throw new ExecutorError(
+          `Invalid value type: expected Node, Relationship, or Path but got ${actualType}`,
+        );
+      }
+
+      return this.convertSingleValue(type, val as Value, record) as Model<T>;
     } catch (error) {
       throw new ExecutorError(`Failed to convert field ${key} to model`, error);
     }
+  }
+
+  /**
+   * Converts a single value to its corresponding model
+   */
+  private convertSingleValue<T extends CIType>(
+    type: CIType,
+    val: Value,
+    record: N4jRecord<
+      RecordShape,
+      PropertyKey,
+      RecordShape<PropertyKey, number>
+    >,
+  ): Model<T> {
+    switch (type) {
+      case "u": {
+        if (!(val instanceof Node)) {
+          throw new ExecutorError(
+            `Incorrect field type: expected Node but got ${val.constructor.name}`,
+          );
+        }
+
+        // Check for guild
+        let g;
+        if (record.has("g")) {
+          g = record.get("g");
+        }
+
+        return new N4jUser(
+          val.properties.id,
+          g?.properties?.id,
+          undefined,
+          val.elementId,
+        ) as Model<T>;
+      }
+      case "g": {
+        if (!(val instanceof Node)) {
+          throw new ExecutorError(
+            `Incorrect field type: expected Node but got ${val.constructor.name}`,
+          );
+        }
+
+        return new N4jGuild(
+          val.properties.id,
+          val.properties.createdOn,
+        ) as Model<T>;
+      }
+      case "p": {
+        if (!(val instanceof Path)) {
+          throw new ExecutorError(
+            `Incorrect field type: expected Path but got ${val.constructor.name}`,
+          );
+        }
+
+        return N4jPath.fromRaw(val) as Model<T>;
+      }
+      case "r": {
+        if (!(val instanceof Relationship)) {
+          throw new ExecutorError(
+            `Incorrect field type: expected Relationship but got ${val.constructor.name}`,
+          );
+        }
+
+        if (!N4jRelation.isValidRel(val.type)) {
+          throw new Error(`Invalid relation type: ${val.type}`);
+        }
+
+        return new N4jRelation(
+          val.type as any,
+          val.startNodeElementId,
+          val.endNodeElementId,
+        ) as Model<T>;
+      }
+      default: {
+        throw new Error("Unknown field key.");
+      }
+    }
+  }
+
+  /**
+   * Validates that a value is of the expected Neo4j types
+   */
+  private isValidValue(value: any): value is Value {
+    return (
+      value instanceof Node ||
+      value instanceof Relationship ||
+      value instanceof Path
+    );
   }
 
   /**

@@ -25,7 +25,7 @@ const config = {
     },
   },
   api: {
-    maxActionRowLength: 5
+    maxActionRowLength: 5,
   },
 
   embedCustomization: {
@@ -33,6 +33,25 @@ const config = {
       color: 16410624, // #FA6800
     },
     errorColor: "#f22952",
+  },
+
+  // Graph Visualization
+  graph: {
+    node: {
+      fillColor: "#FA6800",
+      borderColor: "#000000",
+      borderWidth: 2,
+      borderRadius: 20,
+      text: {
+        font: "bold 14px 'Segoe UI', 'Arial Black', 'Helvetica Black', sans-serif",
+        color: "#000000",
+        maxLength: 20,
+      },
+      padding: {
+        horizontal: 16,
+        vertical: 8,
+      },
+    },
   },
 
   // DB
