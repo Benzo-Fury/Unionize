@@ -24,6 +24,7 @@
     "@sern/handler": "^4.2.4",
     "@sern/publisher": "^1.1.2",
     "discord.js": "^14.21.0",
+    "hierarchia": "^1.0.1",
     "mongoose": "^8.7.3",
     "neo4j-driver": "^5.26.0"
   },
